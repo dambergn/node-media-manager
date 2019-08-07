@@ -6,7 +6,8 @@ require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 // const url = require('url');
-const request = require('node-fetch');
+// const request = require('node-fetch');
+const request = require('request');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const readline = require('readline');
@@ -114,23 +115,32 @@ rl.on('line', (input) => {
   };
 });
 
+let download = function(uri, filename, callback){
+  request.head(uri, function(err, res, body){    
+    request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+  });
+};
+
+
+
 
 function TVDBdownloadPosters(name, seriesID, data){
   // https://www.thetvdb.com/banners/posters/275274-7.jpg
   console.log('Series Name: ', name);
   console.log('SeriesID: ', seriesID);
-  // console.log('Posters: ', data);
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
   };
   for(let i = 0; i < data.length; i++){
     let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName
-    let saveFileName = 'downloads/' + seriesID + '/img/' + name + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg'
-    console.log(downloadURL);
-    console.log(saveFileName);
-    // download('https://www.thetvdb.com/banners/' + data[i].fileName, 'downloads/' + seriesID + '/img/' + name + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg', function(){
+    let saveFileName = 'downloads/' + name + '/img/' + name + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg'
+    // console.log(downloadURL);
+    // console.log(saveFileName);
 
-// });
+    download(downloadURL, saveFileName, function(){
+  // console.log('done');
+});
+
   }
   
 }
