@@ -58,32 +58,47 @@ function generateFileNames() {
 };
 generateFileNames();
 
-// console.log(episodes);
-
-// Checks to see if file already exists and if it does, deltes it.
-try {
-  if (fs.existsSync(filePath + 'episode-list.txt')) {
-    //file exists
-    try {
-      fs.unlinkSync(filePath + 'episode-list.txt')
-      //file removed
-    } catch (err) {
-      console.error(err)
+// Saves episode list to a text file
+function generateTextEpisodeList() {
+  // Checks to see if file already exists and if it does, deltes it.
+  try {
+    if (fs.existsSync(filePath + 'episode-list.txt')) {
+      //file exists
+      try {
+        fs.unlinkSync(filePath + 'episode-list.txt')
+        //file removed
+      } catch (err) {
+        console.error(err)
+      }
     }
+  } catch (err) {
+    console.error(err)
   }
-} catch (err) {
-  console.error(err)
+
+  var text = fs.createWriteStream(filePath + 'episode-list.txt', {
+    flags: 'a' // 'a' means appending (old data will be preserved)
+  })
+
+  text.write(info.seriesName + '\n') // append string to your file
+  text.write('' + '\n') // Blank Space
+  text.write(info.overview + '\n') // again
+  text.write('' + '\n') // Blank Space
+  
+  function n(n) {
+    return n > 9 ? "" + n : "0" + n;
+  };
+  for (let i = 0; i < episodes.length; i++) { // Seasons
+    if (i === 0) {
+      text.write('Specials' + '\n')
+    } else {
+      text.write('Season ' + n(i) + '\n')
+    }
+    for (let j = 0; j < episodes[i].length; j++) { // Episodes
+      text.write(episodes[i][j] + '\n')
+    }
+    text.write('' + '\n') // Blank Space
+  }
+  text.end() // close string
 }
 
-var text = fs.createWriteStream(filePath + 'episode-list.txt', {
-  flags: 'a' // 'a' means appending (old data will be preserved)
-})
-
-text.write(info.seriesName + '\n') // append string to your file
-
-text.write('' + '\n') // Blank Space
-
-text.write(info.overview + '\n') // again
-
-text.write('' + '\n') // Blank Space
-text.end() // close string
+generateTextEpisodeList();
