@@ -21,7 +21,7 @@ function findNumberOfSeasons() {
   let count = 0;
   let found = [];
   for (let i = 0; i < info.episodes.length; i++) {
-    
+
     if (typeof found[info.episodes[i].airedSeason] === 'undefined') {
       // does not exist
       count++;
@@ -34,15 +34,15 @@ function findNumberOfSeasons() {
 };
 
 //Generate 3D array for seasons
-function generateArray(){
-  for(let i = 0; i < findNumberOfSeasons(); i++){
+function generateArray() {
+  for (let i = 0; i < findNumberOfSeasons(); i++) {
     episodes.push(new Array());
   }
 };
 generateArray();
 
 //Populates 3D array of seasons and episode names
-function generateFileNames(){
+function generateFileNames() {
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
   };
@@ -50,9 +50,9 @@ function generateFileNames(){
     let season = n(info.episodes[i].airedSeason);
     let episodeNumber = n(info.episodes[i].airedEpisodeNumber);
     let episodeName = info.episodes[i].episodeName.replace(':', ',').replace('\'', '').replace('?', '');
-  
+
     let fileName = info.seriesName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
-  
+
     episodes[info.episodes[i].airedSeason].push(fileName);
   };
 };
@@ -60,10 +60,18 @@ generateFileNames();
 
 // console.log(episodes);
 
+// Checks to see if file already exists and if it does, deltes it.
 try {
-  fs.unlinkSync(filePath + 'episode-list.txt')
-  //file removed
-} catch(err) {
+  if (fs.existsSync(filePath + 'episode-list.txt')) {
+    //file exists
+    try {
+      fs.unlinkSync(filePath + 'episode-list.txt')
+      //file removed
+    } catch (err) {
+      console.error(err)
+    }
+  }
+} catch (err) {
   console.error(err)
 }
 
