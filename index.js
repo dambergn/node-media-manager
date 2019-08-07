@@ -58,6 +58,24 @@ function getSeriesAllByID(seriesID) {
       saveToJSON(response);
     })
     .catch(error => { throw (error) });
+};
+
+function getSeriesBannerByID(seriesID) {
+  tvdb.getSeriesBanner(seriesID)
+    .then(response => { console.log(response) })
+    .catch(error => { throw (error) });
+}
+
+function getSeriesFanArtByID(seriesID) {
+  tvdb.getSeriesImages(seriesID, 'fanart')
+    .then(response => { return response })
+    .catch(error => { throw (error) });
+}
+
+function getSeriesPostersByID(seriesID) {
+  tvdb.getSeriesPosters(seriesID)
+    .then(response => { return response })
+    .catch(error => { throw (error) });
 }
 
 app.listen(PORT, () => {
@@ -81,6 +99,12 @@ rl.on('line', (input) => {
     getEpisodesByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getseriesallbyid') {
     getSeriesAllByID(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'getbanner') {
+    getSeriesBannerByID(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'getfanart') {
+    getSeriesFanArtByID(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'getposter') {
+    getSeriesPostersByID(input.substr(input.indexOf(' ') + 1));
   } else if (input === 'update') {
     server.update();
   } else {
@@ -88,7 +112,17 @@ rl.on('line', (input) => {
   };
 });
 
-function saveToJSON(data){
+function TVDBdownloadPosters(name, id){
+  let posters = getSeriesPostersByID(id)
+  console.log(posters);
+}
+
+function TVDBdownloadFanart(name, id){
+  let fanart = getSeriesFanArtByID(id)
+
+}
+
+function saveToJSON(data) {
   if (!fs.existsSync('downloads')) {
     fs.mkdirSync('downloads');
   };
@@ -97,7 +131,10 @@ function saveToJSON(data){
     fs.mkdirSync(`downloads/${data.seriesName}`);
     fs.mkdirSync(`downloads/${data.seriesName}/img`);
   };
-  
+
+  TVDBdownloadPosters(data.seriesName, data.id);
+  // TVDBdownloadFanart(data.seriesName, data.id);
+
   fs.writeFile(`./downloads/${data.seriesName}/info.json`, JSON.stringify(data), 'utf8', function (err) {
     if (err) {
       return console.log(err);
