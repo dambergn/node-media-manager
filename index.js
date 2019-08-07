@@ -75,9 +75,10 @@ function getSeriesFanArtByID(seriesID) {
 
 function getSeriesPostersByID(name, seriesID) {
   tvdb.getSeriesPosters(seriesID)
-    .then(response => { 
+    .then(response => {
       TVDBdownloadPosters(name, seriesID, response);
-      return response})
+      return response
+    })
     .catch(error => { throw (error) });
 }
 
@@ -115,37 +116,26 @@ rl.on('line', (input) => {
   };
 });
 
-let download = function(uri, filename, callback){
-  request.head(uri, function(err, res, body){    
+let download = function (uri, filename, callback) {
+  request.head(uri, function (err, res, body) {
     request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
   });
 };
 
-
-
-
-function TVDBdownloadPosters(name, seriesID, data){
+function TVDBdownloadPosters(name, seriesID, data) {
   // https://www.thetvdb.com/banners/posters/275274-7.jpg
-  console.log('Series Name: ', name);
-  console.log('SeriesID: ', seriesID);
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
   };
-  for(let i = 0; i < data.length; i++){
-    let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName
-    let saveFileName = 'downloads/' + name + '/img/' + name + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg'
-    // console.log(downloadURL);
-    // console.log(saveFileName);
-
-    download(downloadURL, saveFileName, function(){
-  // console.log('done');
-});
-
+  for (let i = 0; i < data.length; i++) {
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
+    let saveFileName = 'downloads/' + name + '/img/' + name + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg';
+    download(downloadURL, saveFileName, function () {
+    });
   }
-  
 }
 
-function TVDBdownloadFanart(name, id){
+function TVDBdownloadFanart(name, id) {
   let fanart = getSeriesFanArtByID(id)
   console.log(fanart)
 }
