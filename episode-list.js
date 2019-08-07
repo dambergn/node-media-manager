@@ -14,26 +14,68 @@ let info = JSON.parse(rawdata);
 // console.log(info.overview);
 // console.log(info.episodes.length);
 
-let specials = [];
 let episodes = [];
 
-for (let i = 0; i < info.episodes.length; i++) {
+//How many seasons in series
+function findNumberOfSeasons() {
+  let count = 0;
+  let found = [];
+  for (let i = 0; i < info.episodes.length; i++) {
+    
+    if (typeof found[info.episodes[i].airedSeason] === 'undefined') {
+      // does not exist
+      count++;
+      found.push(info.episodes[i].airedSeason);
+    } else {
+      // does exist
+    }
+  };
+  return count;
+};
 
+//Generate 3D array for seasons
+function generateArray(){
+  for(let i = 0; i < findNumberOfSeasons(); i++){
+    episodes.push(new Array());
+  }
+};
+generateArray();
+
+//Populates 3D array of seasons and episode names
+function generateFileNames(){
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
   };
-
-  let season = n(info.episodes[i].airedSeason);
-  let episodeNumber = n(info.episodes[i].airedEpisodeNumber);
-  let episodeName = info.episodes[i].episodeName.replace(':',',').replace('\'','').replace('?','');
-
-  let fileName = info.seriesName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
-
-  if (season === '00' ){
-    specials.push(fileName);
-  } else {
-    episodes.push(fileName);
-  }
+  for (let i = 0; i < info.episodes.length; i++) {
+    let season = n(info.episodes[i].airedSeason);
+    let episodeNumber = n(info.episodes[i].airedEpisodeNumber);
+    let episodeName = info.episodes[i].episodeName.replace(':', ',').replace('\'', '').replace('?', '');
+  
+    let fileName = info.seriesName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
+  
+    episodes[info.episodes[i].airedSeason].push(fileName);
+  };
 };
+generateFileNames();
 
-console.log(specials);
+// console.log(episodes);
+
+try {
+  fs.unlinkSync(filePath + 'episode-list.txt')
+  //file removed
+} catch(err) {
+  console.error(err)
+}
+
+var text = fs.createWriteStream(filePath + 'episode-list.txt', {
+  flags: 'a' // 'a' means appending (old data will be preserved)
+})
+
+text.write(info.seriesName + '\n') // append string to your file
+
+text.write('' + '\n') // Blank Space
+
+text.write(info.overview + '\n') // again
+
+text.write('' + '\n') // Blank Space
+text.end() // close string
