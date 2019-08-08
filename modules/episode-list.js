@@ -6,13 +6,19 @@ Converts saved json file to a simple to view and use txt file with episode file 
 
 const fs = require('fs');
 
-let filePath = 'downloads/Rick and Morty/'
+// let filePath = 'downloads/Rick and Morty/'
+let filePath = '';
+let rawdata = '';
+let info = '';
 
-let rawdata = fs.readFileSync(filePath + 'info.json');
-let info = JSON.parse(rawdata);
-// console.log(info.seriesName);
-// console.log(info.overview);
-// console.log(info.episodes.length);
+function collectData(){
+  rawdata = fs.readFileSync(filePath);
+  info = JSON.parse(rawdata);
+  // console.log(info.seriesName);
+  // console.log(info.overview);
+  // console.log(info.episodes.length);
+}
+
 
 let episodes = [];
 
@@ -39,7 +45,7 @@ function generateArray() {
     episodes.push(new Array());
   }
 };
-generateArray();
+
 
 //Populates 3D array of seasons and episode names
 function generateFileNames() {
@@ -56,7 +62,7 @@ function generateFileNames() {
     episodes[info.episodes[i].airedSeason].push(fileName);
   };
 };
-generateFileNames();
+
 
 // Saves episode list to a text file
 function generateTextEpisodeList() {
@@ -101,4 +107,12 @@ function generateTextEpisodeList() {
   text.end() // close string
 }
 
-generateTextEpisodeList();
+
+
+exports.saveToTextFile = function (folder) {
+  filePath = folder
+  collectData()
+  generateArray();
+  generateFileNames();
+  generateTextEpisodeList();
+}
