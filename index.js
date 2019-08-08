@@ -6,8 +6,8 @@ require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 // const url = require('url');
-// const request = require('node-fetch');
-const request = require('request');
+const request = require('node-fetch');
+const requestURL = require('request');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const readline = require('readline');
@@ -67,9 +67,13 @@ function getSeriesBannerByID(seriesID) {
     .catch(error => { throw (error) });
 }
 
-function getSeriesFanArtByID(seriesID) {
+function getSeriesFanArtByID(name, seriesID, response) {
   tvdb.getSeriesImages(seriesID, 'fanart')
-    .then(response => { return response })
+    .then(response => { 
+      // console.log(response);
+      TVDBdownloadFanart(name, seriesID, response);
+      return response 
+    })
     .catch(error => { throw (error) });
 }
 
@@ -117,8 +121,8 @@ rl.on('line', (input) => {
 });
 
 let download = function (uri, filename, callback) {
-  request.head(uri, function (err, res, body) {
-    request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+  requestURL.head(uri, function (err, res, body) {
+    requestURL(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
   });
 };
 
@@ -135,9 +139,19 @@ function TVDBdownloadPosters(name, seriesID, data) {
   }
 }
 
-function TVDBdownloadFanart(name, id) {
-  let fanart = getSeriesFanArtByID(id)
-  console.log(fanart)
+function TVDBdownloadFanart(name, seriesID, data) {
+  // https://www.thetvdb.com/banners/fanart/original/275274-9.jpg
+  // console.log(data);
+
+  function n(n) {
+    return n > 9 ? "" + n : "0" + n;
+  };
+  for (let i = 0; i < data.length; i++) {
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
+    let saveFileName = 'downloads/' + name + '/img/' + name + ' - fanart' + n(i) + '[' + data[i].resolution + '].jpg';
+    
+    download(downloadURL, saveFileName, function () {});
+  }
 }
 
 function saveToJSON(data) {
@@ -151,7 +165,7 @@ function saveToJSON(data) {
   };
 
   getSeriesPostersByID(data.seriesName, data.id);
-  // TVDBdownloadFanart(data.seriesName, data.id);
+  getSeriesFanArtByID(data.seriesName, data.id);
 
   fs.writeFile(`./downloads/${data.seriesName}/info.json`, JSON.stringify(data), 'utf8', function (err) {
     if (err) {
