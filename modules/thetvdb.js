@@ -41,6 +41,7 @@ exports.getSeriesAllByID = function (seriesID) {
       response.episodes; // contains an array of episodes
       // console.log(response);
       saveToJSON(response);
+      createSeasonsFolders(response);
     })
     .catch(error => { throw (error) });
 };
@@ -132,7 +133,7 @@ function saveToJSON(data) {
       return console.log(err);
     };
     console.log("The file was saved!");
-    saveToTextFile(`./downloads/${data.seriesName}/info.json`);
+    saveToTextFile(`./downloads/${data.seriesName}/info.json`, data);
   });
 
   getSeriesPostersByID(data.seriesName, data.id);
@@ -142,30 +143,30 @@ function saveToJSON(data) {
 
 // Save Episodes to Human Readable Text File
 let filePath = '';
-let rawdata = '';
-let info = '';
+// let rawdata = '';
+// let info = '';
 
-function collectData() {
-  rawdata = fs.readFileSync(filePath);
-  info = JSON.parse(rawdata);
-  // console.log(info.seriesName);
-  // console.log(info.overview);
-  // console.log(info.episodes.length);
-}
+// function collectData() {
+//   rawdata = fs.readFileSync(filePath);
+//   info = JSON.parse(rawdata);
+//   // console.log(info.seriesName);
+//   // console.log(info.overview);
+//   // console.log(info.episodes.length);
+// }
 
 
 let episodes = [];
 
 //How many seasons in series
-function findNumberOfSeasons() {
+function findNumberOfSeasons(data) {
   let count = 0;
   let found = [];
-  for (let i = 0; i < info.episodes.length; i++) {
+  for (let i = 0; i < data.episodes.length; i++) {
 
-    if (typeof found[info.episodes[i].airedSeason] === 'undefined') {
+    if (typeof found[data.episodes[i].airedSeason] === 'undefined') {
       // does not exist
       count++;
-      found.push(info.episodes[i].airedSeason);
+      found.push(data.episodes[i].airedSeason);
     } else {
       // does exist
     }
@@ -174,32 +175,32 @@ function findNumberOfSeasons() {
 };
 
 //Generate 3D array for seasons
-function generateArray() {
-  for (let i = 0; i < findNumberOfSeasons(); i++) {
+function generateArray(data) {
+  for (let i = 0; i < findNumberOfSeasons(data); i++) {
     episodes.push(new Array());
   }
 };
 
 
 //Populates 3D array of seasons and episode names
-function generateFileNames() {
+function generateFileNames(data) {
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
   };
-  for (let i = 0; i < info.episodes.length; i++) {
-    let season = n(info.episodes[i].airedSeason);
-    let episodeNumber = n(info.episodes[i].airedEpisodeNumber);
-    let episodeName = info.episodes[i].episodeName.replace(':', ',').replace('\'', '').replace('?', '');
+  for (let i = 0; i < data.episodes.length; i++) {
+    let season = n(data.episodes[i].airedSeason);
+    let episodeNumber = n(data.episodes[i].airedEpisodeNumber);
+    let episodeName = data.episodes[i].episodeName.replace(':', ',').replace('\'', '').replace('?', '');
 
-    let fileName = info.seriesName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
+    let fileName = data.seriesName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
 
-    episodes[info.episodes[i].airedSeason].push(fileName);
+    episodes[data.episodes[i].airedSeason].push(fileName);
   };
 };
 
 
 // Saves episode list to a text file
-function generateTextEpisodeList() {
+function generateTextEpisodeList(data) {
   // Checks to see if file already exists and if it does, deltes it.
   try {
     if (fs.existsSync(filePath + 'episode-list.txt')) {
@@ -219,9 +220,9 @@ function generateTextEpisodeList() {
     flags: 'a' // 'a' means appending (old data will be preserved)
   })
 
-  text.write(info.seriesName + '\n') // append string to your file
+  text.write(data.seriesName + '\n') // append string to your file
   text.write('' + '\n') // Blank Space
-  text.write(info.overview + '\n') // again
+  text.write(data.overview + '\n') // again
   text.write('' + '\n') // Blank Space
 
   function n(n) {
@@ -241,11 +242,30 @@ function generateTextEpisodeList() {
   text.end() // close string
 }
 
-let saveToTextFile = function (folder) {
+let saveToTextFile = function (folder, data) {
   filePath = folder
-  collectData()
-  generateArray();
-  generateFileNames();
-  generateTextEpisodeList();
+  // collectData()
+  generateArray(data);
+  generateFileNames(data);
+  generateTextEpisodeList(data);
 }
 
+function createSeasonsFolders(data){
+  let seasons = findNumberOfSeasons(data)
+
+  function n(n) {
+    return n > 9 ? "" + n : "0" + n;
+  };
+  
+  for(let i = 0; i < seasons; i++){
+    if(i < 1){
+      if (!fs.existsSync(`downloads/${data.seriesName}/Specials`)) {
+        fs.mkdirSync(`downloads/${data.seriesName}/Specials`);
+      };
+    } else {
+      if (!fs.existsSync(`downloads/${data.seriesName}/Season${n(i)}`)) {
+        fs.mkdirSync(`downloads/${data.seriesName}/Season${n(i)}`);
+      };
+    }
+  }
+}
