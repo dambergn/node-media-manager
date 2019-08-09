@@ -1,4 +1,5 @@
 'use strict';
+// 'v1.0'
 
 require('dotenv').config();
 const fs = require('fs');
@@ -105,16 +106,22 @@ function TVDBdownloadFanart(name, seriesID, data) {
   }
 }
 
-function TVDBdownloadThumbnails(name, seriesID, data) {
+function TVDBdownloadThumbnails(data) {
   // https://www.thetvdb.com/banners/episodes/275274/4711142.jpg
+
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
   };
-  for (let i = 0; i < data.length; i++) {
-    let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
-    let saveFileName = 'downloads/' + name + '/img/' + name + ' - fanart' + n(i) + '[' + data[i].resolution + '].jpg';
+  for (let i = 0; i < data.episodes.length; i++) {
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes[i].fileName;
 
-    download(downloadURL, saveFileName, function () { });
+    if(data.episodes[i].airedSeason < 1){
+      let saveFileName = 'downloads/' + data.seriesName + '/Specials/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + data.episodes[i].episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
+      download(downloadURL, saveFileName, function () { });
+    } else {
+      let saveFileName = 'downloads/' + data.seriesName + '/Season' + n(data.episodes[i].airedSeason) + '/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + data.episodes[i].episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
+      download(downloadURL, saveFileName, function () { });
+    }
   }
 }
 
@@ -262,10 +269,15 @@ function createSeasonsFolders(data){
       if (!fs.existsSync(`downloads/${data.seriesName}/Specials`)) {
         fs.mkdirSync(`downloads/${data.seriesName}/Specials`);
       };
+      if (!fs.existsSync(`downloads/${data.seriesName}/Extras`)) {
+        fs.mkdirSync(`downloads/${data.seriesName}/Extras`);
+      };
     } else {
       if (!fs.existsSync(`downloads/${data.seriesName}/Season${n(i)}`)) {
         fs.mkdirSync(`downloads/${data.seriesName}/Season${n(i)}`);
       };
     }
   }
+
+  TVDBdownloadThumbnails(data);
 }

@@ -1,7 +1,7 @@
 #!/usr/bin/nodemon
 'use strict'
 
-const serverVersion = 'v0.1 Beta'
+const serverVersion = 'v0.2 Beta'
 require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
@@ -27,12 +27,26 @@ app.get('/', (req, res) => {
   res.sendFile('index.html', { root: './public' });
 });
 
+function serverIncriment() {
+  let nodePackage = JSON.parse(fs.readFileSync('package.json'));
+  
+  console.log('pre:', nodePackage.version);
+  let formatting = nodePackage.version.split('.');
+  formatting[2]++;
+  console.log('post:', nodePackage.version);
 
+  // fs.writeFile('package.json', JSON.stringify(nodePackage), function (err) {
+  //   if (err) return console.log(err);
+  // });
+  
+  return nodePackage.version
+}
 
 app.listen(PORT, () => {
   console.log('Listening on port:', PORT, 'use CTRL+C to close.')
   console.log('Server started:', new Date());
-  console.log('Currently running on', serverVersion)
+  // console.log('Currently running on', serverVersion);
+  console.log('Currently running on Version', serverIncriment())
 });
 
 // Admin console commands
