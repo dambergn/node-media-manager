@@ -7,8 +7,6 @@ const request = require('node-fetch');
 const requestURL = require('request');
 const bodyParser = require('body-parser');
 
-// const episodesToText = require ('./episode-list.js');
-
 // The TVDB
 const TheTVDB_URL = 'https://api.thetvdb.com';
 const TVDB_KEY = process.env.TVDB_API_KEY;
@@ -27,13 +25,13 @@ function getSeriesID(seriesID) {
   tvdb.getSeriesById(seriesID)
     .then(response => { console.log(response) })
     .catch(error => { throw (error) });
-}
+};
 
 function getEpisodesByID(seriesID) {
   tvdb.getEpisodesSummaryBySeriesId(seriesID)
     .then(response => { console.log(response) })
     .catch(error => { throw (error) });
-}
+};
 
 exports.getSeriesAllByID = function (seriesID) {
   tvdb.getSeriesAllById(seriesID)
@@ -51,7 +49,7 @@ function getSeriesBannerByID(seriesID) {
   tvdb.getSeriesBanner(seriesID)
     .then(response => { console.log(response) })
     .catch(error => { throw (error) });
-}
+};
 
 function getSeriesFanArtByID(name, seriesID, response) {
   tvdb.getSeriesImages(seriesID, 'fanart')
@@ -61,7 +59,7 @@ function getSeriesFanArtByID(name, seriesID, response) {
       return response
     })
     .catch(error => { throw (error) });
-}
+};
 
 function getSeriesPostersByID(name, seriesID) {
   tvdb.getSeriesPosters(seriesID)
@@ -70,7 +68,7 @@ function getSeriesPostersByID(name, seriesID) {
       return response
     })
     .catch(error => { throw (error) });
-}
+};
 
 let download = function (uri, filename, callback) {
   requestURL.head(uri, function (err, res, body) {
@@ -89,7 +87,7 @@ function TVDBdownloadPosters(name, seriesID, data) {
     download(downloadURL, saveFileName, function () {
     });
   }
-}
+};
 
 function TVDBdownloadFanart(name, seriesID, data) {
   // https://www.thetvdb.com/banners/fanart/original/275274-9.jpg
@@ -104,7 +102,7 @@ function TVDBdownloadFanart(name, seriesID, data) {
 
     download(downloadURL, saveFileName, function () { });
   }
-}
+};
 
 function TVDBdownloadThumbnails(data) {
   // https://www.thetvdb.com/banners/episodes/275274/4711142.jpg
@@ -114,16 +112,17 @@ function TVDBdownloadThumbnails(data) {
   };
   for (let i = 0; i < data.episodes.length; i++) {
     let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes[i].fileName;
-
+    let saveFileName = ''
     if(data.episodes[i].airedSeason < 1){
-      let saveFileName = 'downloads/' + data.seriesName + '/Specials/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + data.episodes[i].episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
-      download(downloadURL, saveFileName, function () { });
+      let episodeName = data.episodes[i].episodeName.split(' /').join(',');
+      saveFileName = 'downloads/' + data.seriesName + '/Specials/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
     } else {
-      let saveFileName = 'downloads/' + data.seriesName + '/Season' + n(data.episodes[i].airedSeason) + '/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + data.episodes[i].episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
-      download(downloadURL, saveFileName, function () { });
+      let episodeName = data.episodes[i].episodeName.split(' /').join(',');
+      saveFileName = 'downloads/' + data.seriesName + '/Season' + n(data.episodes[i].airedSeason) + '/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
     }
+    download(downloadURL, saveFileName, function () { });
   }
-}
+};
 
 function saveToJSON(data) {
   if (!fs.existsSync('downloads')) {
@@ -150,18 +149,6 @@ function saveToJSON(data) {
 
 // Save Episodes to Human Readable Text File
 let filePath = '';
-// let rawdata = '';
-// let info = '';
-
-// function collectData() {
-//   rawdata = fs.readFileSync(filePath);
-//   info = JSON.parse(rawdata);
-//   // console.log(info.seriesName);
-//   // console.log(info.overview);
-//   // console.log(info.episodes.length);
-// }
-
-
 let episodes = [];
 
 //How many seasons in series
@@ -187,7 +174,6 @@ function generateArray(data) {
     episodes.push(new Array());
   }
 };
-
 
 //Populates 3D array of seasons and episode names
 function generateFileNames(data) {
@@ -247,15 +233,14 @@ function generateTextEpisodeList(data) {
     text.write('' + '\n') // Blank Space
   }
   text.end() // close string
-}
+};
 
 let saveToTextFile = function (folder, data) {
   filePath = folder
-  // collectData()
   generateArray(data);
   generateFileNames(data);
   generateTextEpisodeList(data);
-}
+};
 
 function createSeasonsFolders(data){
   let seasons = findNumberOfSeasons(data)
@@ -278,6 +263,5 @@ function createSeasonsFolders(data){
       };
     }
   }
-
   TVDBdownloadThumbnails(data);
-}
+};
