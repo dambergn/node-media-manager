@@ -1,7 +1,7 @@
 'use strict'
 
 // var stringSimilarity = require('string-similarity');
-
+ 
 // var similarity = stringSimilarity.compareTwoStrings('healed', 'sealed'); 
 
 let searchList = ['Gravity Falls - S01E01 - Tourist Trapped',
@@ -44,20 +44,19 @@ let searchList = ['Gravity Falls - S01E01 - Tourist Trapped',
   'Gravity Falls - S02E18 - Weirdmageddon (1)',
   'Gravity Falls - S02E19 - Weirdmageddon (2), Escape From Reality',
   'Gravity Falls - S02E20 - Weirdmageddon (3), Take Back The Falls'
-];
+  ];
 
-// let searchWord = 'S02E20';
-
+  let searchWord = 'Gravity.Falls.S02E20';
+ 
 // var matches = stringSimilarity.findBestMatch(searchWord, searchList);
-// var matches = stringSimilarity.findBestMatch(parseFilename('[galumpa]Gravity.Falls.S02E17.Dipper.and.Mabel.vs.the.Future[h.264 1080p]').episode, searchList);
 
 // console.log(matches);
 
 // Check for properly formatted E00S00
-function checkEpisode(episode) {
+function checkEpisode(episode){
   let splitted = episode.split('');
-  for (let i = 0; i < splitted.length; i++) {
-    if ((splitted[0] === 'S' || splitted[0] === 's') && (splitted[3] === 'E' || splitted[3] === 'e')) {
+  for (let i = 0; i < splitted.length; i++){
+    if ((splitted[0] === 'S' || splitted[0] === 's') && (splitted[3] === 'E' || splitted[3] === 'e')){
       return true;
     } else {
       return false;
@@ -65,19 +64,24 @@ function checkEpisode(episode) {
   }
 }
 
-// remove extras first
-function checkExtras(fileName) {
+
+function checkExtras(){
+
+}
+
+function parseFilename(fileName){
+  // remove extras first
   let fullSplit = fileName.split('');
   let startBracketFound = false
   let extraTmp = [];
   let noExtrasTmp = [];
   let extras = [];
-  for (let j = 0; j < fullSplit.length; j++) {
-    if (fullSplit[j] === '[') {
+  for(let j = 0; j < fullSplit.length; j++){
+    if(fullSplit[j] === '['){
       // console.log('Starting bracket found:', fullSplit[j]);
       startBracketFound = true;
       extraTmp.push(fullSplit[j]);
-    } else if (fullSplit[j] === ']') {
+    } else if(fullSplit[j] === ']'){
       // console.log('End bracket found:', fullSplit[j]);
       startBracketFound = false;
       extraTmp.push(fullSplit[j]);
@@ -93,62 +97,50 @@ function checkExtras(fileName) {
     }
   }
   fileName = noExtrasTmp.join().split(',').join('');
-  let results = {
-    extras: extras,
-    fileName: fileName
-  }
-  return results;
-}
-
-function parseFilename(fileName) {
-  let temp1 = checkExtras(fileName);
-  fileName = temp1.fileName;
-  let seriesName = [];
-  let episode = '';
-  let episodeName = [];
-  let extras = [];
-  extras = temp1.extras;
-
-  function Episode(seriesName, episode, episodeName, extras) {
-    this.seriesName = seriesName;
-    this.episode = episode;
-    this.episodeName = episodeName;
-    this.extras = extras;
-  }
+  
 
   let splitDash = fileName.split(' - ');
   let splitDot = fileName.split('.');
 
-  if (splitDash.length > 2) {
-    seriesName = splitDash[0];
-    episode = splitDash[1];
-    episodeName = splitDash[2];
-    let results = new Episode(seriesName, episode, episodeName, extras);
-    return results;
+  if (splitDash.length > 2){
+    let seriesName = splitDash[0];
+    let episode = splitDash[1];
+    let episodeName = splitDash[2];
+    console.log('Series Name:', seriesName);
+    console.log('Episode:', episode);
+    console.log('Episode Name:', episodeName);
+    console.log('Extras:', extras);
+    return episode;
   } else {
+    let seriesName = [];
+    let episode = '';
+    let episodeName = [];
+    
     let episodeFound = false;
-    for (let i = 0; i < splitDot.length; i++) {
-      if (checkEpisode(splitDot[i]) === true) {
+    for (let i = 0; i < splitDot.length; i++){
+      if(checkEpisode(splitDot[i]) === true){
         episode = splitDot[i];
         episodeFound = true;
       } else {
-        if (episodeFound === false) {
+        if(episodeFound === false){
           seriesName.push(splitDot[i]);
         } else {
           episodeName.push(splitDot[i]);
         }
       }
     }
-    seriesName = seriesName.join().split(',').join(' ');
-    episodeName = episodeName.join().split(',').join(' ');
-    let results = new Episode(seriesName, episode, episodeName, extras);
-    return results;
+    console.log('Series Name:', seriesName);
+    console.log('Episode:', episode);
+    console.log('Episode Name:', episodeName);
+    console.log('Extras:', extras);
+    return episode;
   }
+  
 }
 
-// console.log(parseFilename('Gravity Falls - S02E17 - Dipper and Mabel vs. the Future[h.264 1080p]'));
-// console.log(parseFilename('[galumpa]Gravity.Falls.S02E17.Dipper.and.Mabel.vs.the.Future[h.264 1080p]'));
+console.log(parseFilename('Gravity Falls - S02E17 - Dipper and Mabel vs. the Future[h.264 1080p]'));
+console.log(parseFilename('[galumpa]Gravity.Falls.S02E17.Dipper.and.Mabel.vs.the.Future[h.264 1080p]'));
 
-// console.log(parseFilename('Marvels.Agents.of.S.H.I.E.L.D.S06E12.720p.AMZN.WEB-DL.DDP5.1.H.264-T6D[eztv]'));
-// console.log(parseFilename('Archer.2009.S10E09.Robert.De.Niro.720p.AMZN.WEB-DL.DDP5.1.H.264-NTb[eztv]'));
-// console.log(parseFilename('Savage.Builds.S01E08.Mega.Food.Fight.720p.WEBRip.x264-CAFFEiNE[eztv]'));
+// parseFilename('Marvels.Agents.of.S.H.I.E.L.D.S06E12.720p.AMZN.WEB-DL.DDP5.1.H.264-T6D[eztv]')
+// parseFilename('Archer.2009.S10E09.Robert.De.Niro.720p.AMZN.WEB-DL.DDP5.1.H.264-NTb[eztv]')
+// parseFilename('Savage.Builds.S01E08.Mega.Food.Fight.720p.WEBRip.x264-CAFFEiNE[eztv]')
