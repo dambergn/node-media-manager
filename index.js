@@ -1,7 +1,7 @@
 #!/usr/bin/nodemon
 'use strict'
 
-const serverVersion = 'v0.2 Beta'
+const serverVersion = 'v0.3 Beta'
 require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
@@ -12,8 +12,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const readline = require('readline');
 
+const webAPI = require('./modules/webAPI.js');
 const TVDBapi = require('./modules/thetvdb.js');
-// const episodesToText = require ('./modules/episode-list.js');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -26,6 +26,8 @@ app.use(express.static('./public'));
 app.get('/', (req, res) => {
   res.sendFile('index.html', { root: './public' });
 });
+
+// app.use('/api', webAPI);
 
 function serverIncriment() {
   let nodePackage = JSON.parse(fs.readFileSync('package.json'));
@@ -56,13 +58,13 @@ const rl = readline.createInterface({
 });
 
 rl.on('line', (input) => {
-  if (input.split(' ')[0] === 'getseries') {
-    getSeries(input.substr(input.indexOf(' ') + 1));
-  } else if (input.split(' ')[0] === 'getseriesid') {
-    getSeriesID(input.substr(input.indexOf(' ') + 1));
+  if (input.split(' ')[0] === 'search') {
+    TVDBapi.getSeries(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'test') {
+    webAPI.test(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getepisodesbyid') {
     getEpisodesByID(input.substr(input.indexOf(' ') + 1));
-  } else if (input.split(' ')[0] === 'getseriesallbyid') {
+  } else if (input.split(' ')[0] === 'save') {
     TVDBapi.getSeriesAllByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getbanner') {
     getSeriesBannerByID(input.substr(input.indexOf(' ') + 1));

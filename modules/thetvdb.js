@@ -15,9 +15,13 @@ const TVDB_AV_HEADER = `application/vnd.thetvdb.${TVDB_API_VERSION}`;
 const TVDB = require('node-tvdb');
 const tvdb = new TVDB(TVDB_KEY);
 
-function getSeries(seriesName) {
+exports.getSeries = function(seriesName) {
   tvdb.getSeriesByName(seriesName)
-    .then(response => { console.log(response) })
+    .then(response => { 
+      for (let i = 0; i < response.length; i++){
+        console.log('name:', response[i].seriesName, 'ID:', response[i].id);
+      };
+    })
     .catch(error => { throw (error) });
 };
 
@@ -114,10 +118,10 @@ function TVDBdownloadThumbnails(data) {
     let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes[i].fileName;
     let saveFileName = ''
     if(data.episodes[i].airedSeason < 1){
-      let episodeName = data.episodes[i].episodeName.split(' /').join(',');
+      let episodeName = data.episodes[i].episodeName.split('/').join(',');
       saveFileName = 'downloads/' + data.seriesName + '/Specials/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
     } else {
-      let episodeName = data.episodes[i].episodeName.split(' /').join(',');
+      let episodeName = data.episodes[i].episodeName.split('/').join(',');
       saveFileName = 'downloads/' + data.seriesName + '/Season' + n(data.episodes[i].airedSeason) + '/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
     }
     download(downloadURL, saveFileName, function () { });
@@ -134,12 +138,12 @@ function saveToJSON(data) {
     fs.mkdirSync(`downloads/${data.seriesName}/img`);
   };
 
-  fs.writeFile(`./downloads/${data.seriesName}/info.json`, JSON.stringify(data), 'utf8', function (err) {
+  fs.writeFile(`./downloads/${data.seriesName}/tvdb.json`, JSON.stringify(data), 'utf8', function (err) {
     if (err) {
       return console.log(err);
     };
     console.log("The file was saved!");
-    saveToTextFile(`./downloads/${data.seriesName}/info.json`, data);
+    saveToTextFile(`./downloads/${data.seriesName}/`, data);
   });
 
   getSeriesPostersByID(data.seriesName, data.id);
