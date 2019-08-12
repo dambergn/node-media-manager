@@ -7,6 +7,8 @@ const request = require('node-fetch');
 const requestURL = require('request');
 const bodyParser = require('body-parser');
 
+let scanLocation = 'downloads/'
+
 // The TVDB
 const TheTVDB_URL = 'https://api.thetvdb.com';
 const TVDB_KEY = process.env.TVDB_API_KEY;
@@ -87,7 +89,7 @@ function TVDBdownloadPosters(name, seriesID, data) {
   };
   for (let i = 0; i < data.length; i++) {
     let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
-    let saveFileName = 'downloads/' + name + '/img/' + name + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg';
+    let saveFileName = scanLocation + name + '/img/' + name + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg';
     download(downloadURL, saveFileName, function () {
     });
   }
@@ -102,7 +104,7 @@ function TVDBdownloadFanart(name, seriesID, data) {
   };
   for (let i = 0; i < data.length; i++) {
     let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
-    let saveFileName = 'downloads/' + name + '/img/' + name + ' - fanart' + n(i) + '[' + data[i].resolution + '].jpg';
+    let saveFileName = scanLocation + name + '/img/' + name + ' - fanart' + n(i) + '[' + data[i].resolution + '].jpg';
 
     download(downloadURL, saveFileName, function () { });
   }
@@ -119,31 +121,35 @@ function TVDBdownloadThumbnails(data) {
     let saveFileName = ''
     if(data.episodes[i].airedSeason < 1){
       let episodeName = data.episodes[i].episodeName.split('/').join(',');
-      saveFileName = 'downloads/' + data.seriesName + '/Specials/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
+      saveFileName = scanLocation + data.seriesName + '/Specials/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
     } else {
       let episodeName = data.episodes[i].episodeName.split('/').join(',');
-      saveFileName = 'downloads/' + data.seriesName + '/Season' + n(data.episodes[i].airedSeason) + '/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
+      saveFileName = scanLocation + data.seriesName + '/Season' + n(data.episodes[i].airedSeason) + '/' + data.seriesName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
     }
     download(downloadURL, saveFileName, function () { });
   }
 };
 
 function saveToJSON(data) {
-  if (!fs.existsSync('downloads')) {
-    fs.mkdirSync('downloads');
+  if (!fs.existsSync(scanLocation)) {
+    fs.mkdirSync(scanLocation);
   };
 
-  if (!fs.existsSync(`downloads/${data.seriesName}`)) {
-    fs.mkdirSync(`downloads/${data.seriesName}`);
-    fs.mkdirSync(`downloads/${data.seriesName}/img`);
+  if (!fs.existsSync(`${scanLocation}${data.seriesName}`)) {
+    fs.mkdirSync(`${scanLocation}${data.seriesName}`);
+    fs.mkdirSync(`${scanLocation}${data.seriesName}/img`);
   };
 
-  fs.writeFile(`./downloads/${data.seriesName}/tvdb.json`, JSON.stringify(data), 'utf8', function (err) {
+  if (!fs.existsSync(`${scanLocation}${data.seriesName}/img`)) {
+    fs.mkdirSync(`${scanLocation}${data.seriesName}/img`);
+  };
+
+  fs.writeFile(`${scanLocation}${data.seriesName}/tvdb.json`, JSON.stringify(data), 'utf8', function (err) {
     if (err) {
       return console.log(err);
     };
     console.log("The file was saved!");
-    saveToTextFile(`./downloads/${data.seriesName}/`, data);
+    saveToTextFile(`${scanLocation}${data.seriesName}/`, data);
   });
 
   getSeriesPostersByID(data.seriesName, data.id);
@@ -255,15 +261,15 @@ function createSeasonsFolders(data){
   
   for(let i = 0; i < seasons; i++){
     if(i < 1){
-      if (!fs.existsSync(`downloads/${data.seriesName}/Specials`)) {
-        fs.mkdirSync(`downloads/${data.seriesName}/Specials`);
+      if (!fs.existsSync(`${scanLocation}${data.seriesName}/Specials`)) {
+        fs.mkdirSync(`${scanLocation}${data.seriesName}/Specials`);
       };
-      if (!fs.existsSync(`downloads/${data.seriesName}/Extras`)) {
-        fs.mkdirSync(`downloads/${data.seriesName}/Extras`);
+      if (!fs.existsSync(`${scanLocation}${data.seriesName}/Extras`)) {
+        fs.mkdirSync(`${scanLocation}${data.seriesName}/Extras`);
       };
     } else {
-      if (!fs.existsSync(`downloads/${data.seriesName}/Season${n(i)}`)) {
-        fs.mkdirSync(`downloads/${data.seriesName}/Season${n(i)}`);
+      if (!fs.existsSync(`${scanLocation}${data.seriesName}/Season${n(i)}`)) {
+        fs.mkdirSync(`${scanLocation}${data.seriesName}/Season${n(i)}`);
       };
     }
   }

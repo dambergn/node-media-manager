@@ -63,7 +63,7 @@ function checkEpisode(episode) {
       return false;
     }
   }
-}
+};
 
 // remove extras first
 function checkExtras(fileName) {
@@ -144,11 +144,11 @@ function parseFilename(fileName) {
     let results = new Episode(seriesName, episode, episodeName, extras);
     return results;
   }
-}
+};
 
 // console.log(parseFilename('Gravity Falls - S02E17 - Dipper and Mabel vs. the Future[h.264 1080p]'));
 // console.log(parseFilename('[galumpa]Gravity.Falls.S02E17.Dipper.and.Mabel.vs.the.Future[h.264 1080p]'));
 
 // console.log(parseFilename('Marvels.Agents.of.S.H.I.E.L.D.S06E12.720p.AMZN.WEB-DL.DDP5.1.H.264-T6D[eztv]'));
 // console.log(parseFilename('Archer.2009.S10E09.Robert.De.Niro.720p.AMZN.WEB-DL.DDP5.1.H.264-NTb[eztv]'));
-// console.log(parseFilename('Savage.Builds.S01E08.Mega.Food.Fight.720p.WEBRip.x264-CAFFEiNE[eztv]'));
+console.log(parseFilename('Savage.Builds.S01E08.Mega.Food.Fight.720p.WEBRip.x264-CAFFEiNE[eztv]'));
