@@ -4,8 +4,8 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 
-// let scanLocation = 'downloads/'
-let scanLocation = '/run/user/1000/gvfs/smb-share:server=filesvrh01,share=tvshows/[NEW]'
+let scanLocation = 'downloads/';
+// let scanLocation = '/run/user/1000/gvfs/smb-share:server=filesvrh01,share=tvshows/[NEW]';
 
 // Process files and folders.
 let walk = function (dir, done) {

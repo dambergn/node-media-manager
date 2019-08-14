@@ -4,6 +4,13 @@
 echo "Setting npm user home directory"
 #sudo chown -R $USER:$(id -gn $USER) $HOME/.config
 
+# Create and setup .env file
+# echo "Creating .env file"
+# touch .env
+# echo "PORT=3000" >> .env
+# echo "TVDB_API_KEY=" >> .env
+# echo "TMDB_API_KEY=" >> .env
+
 # Check if node is installed
 echo "Checking software dependencies"
 if ! [ -x "$(command -v node)" ]; then
