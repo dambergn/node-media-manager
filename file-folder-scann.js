@@ -45,16 +45,27 @@ function formatDirectories(dir, folders) {
 let mosy = function (dir, done) {
   fs.readdir(dir, (err, files) => {
     files.forEach(file => {
-      // console.log(file);
+      console.log(file);
       return done
     });
   });
 };
 
+function mosyV2(dir, done){
+  fs.readdir(dir, (err, files) => {
+    let result = [];
+    files.forEach(file => {
+      // console.log(file);
+      result.push(file);
+    });
+    done(result)
+  });
+}
+
 function scanRoot(dir){
-  mosy(dir, function (err, results) {
-    if (err) throw err;
-    // console.log(resutls);
+  mosyV2(dir, function (err, results) {
+    if (err) console.log('Error:', err);
+    console.log('Scan results:', results);
     return results;
   });
 };
@@ -73,11 +84,11 @@ function scanFolder(dir) {
     let end = new Date().getTime();
     let timeTook = (end - start) / 1000;
     let formattedResults = formatDirectories(dir, results);
-    console.log(rootDir);
+    console.log(formattedResults);
     console.log('Processed ' + results.length + ' Files in ' + timeTook + ' Seconds');
     return formattedResults;
   });
 }
 
-scanFolder(scanLocation);
-// scanRoot(scanLocation);
+// scanFolder(scanLocation);
+console.log(scanRoot(scanLocation));

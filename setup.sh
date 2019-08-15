@@ -1,15 +1,27 @@
-#/bin/bash
+#!/bin/bash
 
 # Setting user permissions
 echo "Setting npm user home directory"
 #sudo chown -R $USER:$(id -gn $USER) $HOME/.config
 
 # Create and setup .env file
-# echo "Creating .env file"
-# touch .env
-# echo "PORT=3000" >> .env
-# echo "TVDB_API_KEY=" >> .env
-# echo "TMDB_API_KEY=" >> .env
+echo "Before continuing make sure you have these items handy."
+echo "TV Database API key."
+
+if [ -f ".env" ]; then
+  echo ".env file already exists"
+else 
+  echo "Creating .env file"
+  touch .env
+  echo "PORT=3000" >> .env
+  echo "Paste your API key for the TV Database and hit Enter."
+  read TVDB_API_KEY
+  echo "TVDB_API_KEY=$TVDB_API_KEY" >> .env
+  # echo "Paster your API key for the Movie Database and hit Enter."
+  # read TMDB_API_KEY
+  echo "TMDB_API_KEY=$TMDB_API_KEY" >> .env
+fi
+
 
 # Check if node is installed
 echo "Checking software dependencies"
@@ -32,7 +44,6 @@ if ! [ -x "$(command -v node)" ]; then
   sudo npm install -g nodemon live-server -y
 
   echo 'Node installation complete'
-
 fi
 
 # Installing node_modules

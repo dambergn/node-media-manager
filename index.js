@@ -2,9 +2,18 @@
 'use strict'
 
 const serverVersion = 'v0.3 Beta'
+const fs = require('fs');
+var nodemon = require('nodemon');
+try {
+  if (!fs.existsSync('.env')) {
+    console.log('***************************************************');
+    console.log('***Please run ./setup.sh or configure .env file!***');
+    console.log('***************************************************');
+    nodemon.emit('quit');
+  }
+} catch(err) {console.error(err)}
 require('dotenv').config();
 const express = require('express');
-const fs = require('fs');
 // const url = require('url');
 // const request = require('node-fetch');
 // const requestURL = require('request');

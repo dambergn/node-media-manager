@@ -180,6 +180,7 @@ function findNumberOfSeasons(data) {
 
 //Generate 3D array for seasons
 function generateArray(data) {
+  episodes = [];
   for (let i = 0; i < findNumberOfSeasons(data); i++) {
     episodes.push(new Array());
   }
