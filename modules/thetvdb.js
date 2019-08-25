@@ -109,7 +109,15 @@ let download = function (uri, filename, callback) {
 };
 
 function filenameFormat(file){
-  let formatted = file.replace(':', ',').replace('\'', '').replace('?', '')
+  // console.log('formatting:', file)
+  let formatted = ""
+  if(file === null){
+    // console.log('null')
+    formatted = 'NA'
+  } else {
+    formatted = file.replace(':', ',').replace('\'', '').replace('?', '');
+  }
+  
   return formatted
 }
 
@@ -121,7 +129,9 @@ function TVDBdownloadPosters(name, seriesID, data) {
   };
   for (let i = 0; i < data.length; i++) {
     let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
-    let saveFileName = scanLocation + formattedFileName + '/img/' + formattedFileName + ' - poster' + n(i) + '[' + data[i].resolution + '].jpg';
+    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+    // console.log('posters ext:', fileExt)
+    let saveFileName = scanLocation + formattedFileName + '/img/' + formattedFileName + ' - poster' + n(i) + '[' + data[i].resolution + '].' + fileExt;
     download(downloadURL, saveFileName, function () {
     });
   }
@@ -136,7 +146,9 @@ function TVDBdownloadFanart(name, seriesID, data) {
   };
   for (let i = 0; i < data.length; i++) {
     let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
-    let saveFileName = scanLocation + formattedFileName + '/img/' + formattedFileName + ' - fanart' + n(i) + '[' + data[i].resolution + '].jpg';
+    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+    // console.log('fanart ext:', fileExt)
+    let saveFileName = scanLocation + formattedFileName + '/img/' + formattedFileName + ' - fanart' + n(i) + '[' + data[i].resolution + '].' + fileExt;
 
     download(downloadURL, saveFileName, function () { });
   }
@@ -149,16 +161,24 @@ function TVDBdownloadThumbnails(data) {
     return n > 9 ? "" + n : "0" + n;
   };
   for (let i = 0; i < data.episodes.length; i++) {
-    let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes[i].fileName;
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes[i].filename;
+    // console.log('Thumbnail URL:', downloadURL)
+    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+    if(fileExt != 'jpg' || fileExt != 'png'){
+      fileExt = 'jpg'
+    }
+    // console.log('thumbnail ext:', fileExt)
     let saveFileName = ''
     if (data.episodes[i].airedSeason < 1) {
-      let episodeName = data.episodes[i].episodeName.split('/').join(',');
-      saveFileName = scanLocation + formattedFileName + '/Specials/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
+      let episodeName = filenameFormat(data.episodes[i].episodeName);
+      saveFileName = scanLocation + formattedFileName + '/Specials/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
     } else {
-      let episodeName = data.episodes[i].episodeName.split('/').join(',');
-      saveFileName = scanLocation + formattedFileName + '/Season' + n(data.episodes[i].airedSeason) + '/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].jpg';
+      let episodeName = filenameFormat(data.episodes[i].episodeName);
+      saveFileName = scanLocation + formattedFileName + '/Season' + n(data.episodes[i].airedSeason) + '/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
     }
-    download(downloadURL, saveFileName, function () { });
+    if(data.episodes[i].episodeName != null){
+      download(downloadURL, saveFileName, function () { });
+    }
   }
 };
 
@@ -280,6 +300,7 @@ function generateTextEpisodeList(data) {
 };
 
 let saveToTextFile = function (folder, data) {
+  // console.log('Save to text file:', data)
   filePath = folder
   generateArray(data);
   generateFileNames(data);

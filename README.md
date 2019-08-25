@@ -4,12 +4,8 @@ Media content management
 # Setup
 Before running the server make sure you have your API keys and run ./setup.sh from the terminal.
 
-Game of Thrones - 121361
-Rick and Morty - 275274 
-
-getseriesallbyid 275274
-getseriesallbyid 121361
-getseriesallbyid 259972
+## ToDO
+reset file permissions of downloads folder after new download completes
 
 getbanner 275274
 getposter 275274

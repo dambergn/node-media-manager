@@ -1,7 +1,6 @@
 #!/usr/bin/nodemon
 'use strict'
 
-const serverVersion = 'v0.3 Beta'
 const fs = require('fs');
 var nodemon = require('nodemon');
 try {
