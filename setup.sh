@@ -2,7 +2,7 @@
 
 # Setting user permissions
 echo "Setting npm user home directory"
-#sudo chown -R $USER:$(id -gn $USER) $HOME/.config
+sudo chown -R $USER:$(id -gn $USER) $HOME/
 
 # Create and setup .env file
 echo "Before continuing make sure you have these items handy."
@@ -48,4 +48,4 @@ fi
 
 # Installing node_modules
 echo "Installing NPM packages"
-#npm install
+npm install

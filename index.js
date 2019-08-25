@@ -36,15 +36,15 @@ app.get('/', (req, res) => {
   res.sendFile('index.html', { root: './public' });
 });
 
-// app.use('/api', webAPI);
+app.use('/api', webAPI);
 
 function serverIncriment() {
   let nodePackage = JSON.parse(fs.readFileSync('package.json'));
   
-  console.log('pre:', nodePackage.version);
+  // console.log('pre:', nodePackage.version);
   let formatting = nodePackage.version.split('.');
   formatting[2]++;
-  console.log('post:', nodePackage.version);
+  // console.log('post:', nodePackage.version);
 
   // fs.writeFile('package.json', JSON.stringify(nodePackage), function (err) {
   //   if (err) return console.log(err);
