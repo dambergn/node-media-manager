@@ -25,6 +25,15 @@ webAPI.get('/test', (req, res, next) => {
   // res.sendStatus(200);
 });
 
+webAPI.get('/load', (req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  let testResponse = {
+    response: "Test route hit"
+  }
+  console.log("test hit, should recive:", testResponse);
+  res.write(JSON.stringify(testResponse));
+});
+
 webAPI.route('/search/:search').get((req, res) => {
   // console.log('WebAPI Results: ', TVDBapi.getSeriesNameAPI(req.params.search));
 

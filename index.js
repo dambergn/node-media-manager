@@ -22,6 +22,7 @@ const readline = require('readline');
 
 const webAPI = require('./modules/webAPI.js');
 const TVDBapi = require('./modules/thetvdb.js');
+const scan = require('./modules/media-scanner.js');
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -82,6 +83,8 @@ rl.on('line', (input) => {
     getSeriesPostersByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'savetotxt') {
     episodesToText.saveToTextFile(input.substr(input.indexOf(' ') + 1));
+  } else if (input === 'scan') {
+    scan.scanFolder();
   } else if (input === 'update') {
     server.update();
   } else {
