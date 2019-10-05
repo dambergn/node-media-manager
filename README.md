@@ -1,3 +1,16 @@
+# node-media-manager
+Media content management
+
+# Setup
+Before running the server make sure you have your API keys and run ./setup.sh from the terminal.
+
+## Features
+- [ ] Scan files and folders
+- [ ] determine media type
+- [ ] get media information based of file names
+- [ ] pull media metata data to populate databases
+- [ ] 
+
 ## Media File Types
 ### Containers & Extensions
 AVI, MKV, MP3, MPEG, MP4, WMV, MOV
