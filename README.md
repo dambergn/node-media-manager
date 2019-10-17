@@ -1,8 +1,9 @@
 # node-media-manager
-Media content management
+Media content management  
+This project was designed and tested on ubuntu linux
 
 # Setup
-Before running the server make sure you have your API keys and run ./setup.sh from the terminal.
+Before running the server make sure you have your API keys and run ./setup.sh from a terminal.
 
 ## Features
 - [ ] Scan files and folders
