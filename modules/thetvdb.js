@@ -176,7 +176,7 @@ function TVDBdownloadThumbnails(data) {
       let episodeName = filenameFormat(data.episodes[i].episodeName);
       saveFileName = scanLocation + formattedFileName + '/Season' + n(data.episodes[i].airedSeason) + '/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
     }
-    if(data.episodes[i].episodeName != null){
+    if(data.episodes[i].episodeName != null && data.episodes[i].thumbWidth != null) {
       download(downloadURL, saveFileName, function () { });
     }
   }

@@ -3,14 +3,25 @@ Media content management
 This project was designed and tested on ubuntu linux
 
 # Setup
-Before running the server make sure you have your API keys and run ./setup.sh from a terminal.
+Before running the server make sure you have your API keys and run ./setup.sh from a terminal.  
+
+## API requirements
+- TheTVdb
+- TheMoviedb
 
 ## Features
 - [ ] Scan files and folders
 - [ ] determine media type
 - [ ] get media information based of file names
 - [ ] pull media metata data to populate databases
-- [ ] 
+- [ ] download tv show contents from the tv database
+- [ ] download movie contents from the movie database
+- [ ] detect anime and get english names from myanimelist
+- [ ] create front end to display downloaded data 
+- [ ] novel database
+- [ ] comic book database
+- [ ] manga database
+- [ ] light novel database
 
 ## Media File Types
 ### Containers & Extensions
