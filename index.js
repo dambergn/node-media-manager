@@ -19,6 +19,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const readline = require('readline');
+const cmd = require('node-cmd');
 
 const webAPI = require('./modules/webAPI.js');
 const TVDBapi = require('./modules/thetvdb.js');
@@ -89,8 +90,8 @@ rl.on('line', (input) => {
     } else { // Error
       console.log('A proper search was not entered')
     } 
-  } else if (input.split(' ')[0] === 'test') {
-    webAPI.test(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'clear') {
+    clearFolder();
   } else if (input.split(' ')[0] === 'getepisodesbyid') {
     getEpisodesByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getbanner') {
@@ -105,11 +106,14 @@ rl.on('line', (input) => {
     scan.scanFolder();
   } else if (input === 'update') {
     server.update();
-  } else if (input.split(' ')[0] === 'movie') {
-    TMDBapi.searchMovie(input.substr(input.indexOf(' ') + 1));
-  } else if (input.split(' ')[0] === 'movieSave') {
-    TMDBapi.saveMovie(input.substr(input.indexOf(' ') + 1));
   } else {
     console.log(input, 'is not a valid input')
   };
 });
+
+function clearFolder(){
+  cmd.get('rm -rf downloads/*', function (err, data, stderr) {
+    if (err) console.log('err: ', err);
+    if (stderr) console.log('stderr: ', stderr);
+  });
+}
