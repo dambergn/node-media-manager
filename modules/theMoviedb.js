@@ -80,6 +80,29 @@ let download = function (uri, filename, callback) {
 function downloadImages (data, name) {
   let url = 'https://image.tmdb.org/t/p/original';
   console.log('downloadIMG: ', url + data.backdrop_path, scanLocation + name + '/img')
-  // download(url + data.backdrop_path, scanLocation + name + '/img');
+  // Backdrop Poster
+  download(url + data.backdrop_path, scanLocation + name + '/img' + data.backdrop_path, function () {
+  });
 
+  function n(n) {
+    return n > 9 ? "" + n : "0" + n;
+  };
+
+  // Backdrops
+  for (let i = 0; i < data.images.backdrops.length; i++){
+    let fileExt = data.images.backdrops[i].file_path.substr(data.images.backdrops[i].file_path.lastIndexOf('.') + 1);
+    let fileName = data.title + ' - fanart' + n(i) + `[${data.images.backdrops[i].height}x${data.images.backdrops[i].width}].${fileExt}`;
+
+    download(url + data.images.backdrops[i].file_path, scanLocation + name + '/img/' + fileName, function () {
+    });
+  }
+
+  // Posters
+  for (let i = 0; i < data.images.posters.length; i++){
+    let fileExt = data.images.posters[i].file_path.substr(data.images.posters[i].file_path.lastIndexOf('.') + 1);
+    let fileName = data.title + ' - posters' + n(i) + `[${data.images.posters[i].height}x${data.images.posters[i].width}].${fileExt}`;
+
+    download(url + data.images.posters[i].file_path, scanLocation + name + '/img/' + fileName, function () {
+    });
+  }
 };
