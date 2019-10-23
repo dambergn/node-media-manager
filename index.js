@@ -69,13 +69,30 @@ const rl = readline.createInterface({
 
 rl.on('line', (input) => {
   if (input.split(' ')[0] === 'search') {
-    TVDBapi.getSeries(input.substr(input.indexOf(' ') + 1));
+    if (input.split(' ')[1] === 'movie') { // Movie
+      // console.log('Searching for:', input.substr(input.indexOf(' ') + 7))
+      TMDBapi.searchMovie(input.substr(input.indexOf(' ') + 7));
+    } else if (input.split(' ')[1] === 'show') { // TVShow
+      TVDBapi.getSeries(input.substr(input.indexOf(' ') + 6));
+    } else if (input.split(' ')[1] === 'anime') { // Anime
+      console.log('Anime search is not yet available')
+    } else { // Error
+      console.log('A proper search was not entered')
+    }
+  } else if (input.split(' ')[0] === 'save') {
+    if (input.split(' ')[1] === 'movie') { // Movie
+      TMDBapi.saveMovie(input.substr(input.indexOf(' ') + 7));
+    } else if (input.split(' ')[1] === 'show'){ // TVShow
+      TVDBapi.getSeriesAllByID(input.substr(input.indexOf(' ') + 6));
+    } else if (input.split(' ')[1] === 'anime') { // Anime
+      console.log('Anime save is not yet available')
+    } else { // Error
+      console.log('A proper search was not entered')
+    } 
   } else if (input.split(' ')[0] === 'test') {
     webAPI.test(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getepisodesbyid') {
     getEpisodesByID(input.substr(input.indexOf(' ') + 1));
-  } else if (input.split(' ')[0] === 'save') {
-    TVDBapi.getSeriesAllByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getbanner') {
     getSeriesBannerByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getfanart') {
