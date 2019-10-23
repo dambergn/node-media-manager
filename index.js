@@ -22,6 +22,7 @@ const readline = require('readline');
 
 const webAPI = require('./modules/webAPI.js');
 const TVDBapi = require('./modules/thetvdb.js');
+const TMDBapi = require('./modules/theMoviedb.js');
 const scan = require('./modules/media-scanner.js');
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -87,6 +88,10 @@ rl.on('line', (input) => {
     scan.scanFolder();
   } else if (input === 'update') {
     server.update();
+  } else if (input.split(' ')[0] === 'movie') {
+    TMDBapi.searchMovie(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'movieSave') {
+    TMDBapi.saveMovie(input.substr(input.indexOf(' ') + 1));
   } else {
     console.log(input, 'is not a valid input')
   };
