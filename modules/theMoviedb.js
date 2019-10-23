@@ -24,7 +24,8 @@ exports.searchMovie = function (movieName) {
         for(let i = 0; i < data.body.results.length; i++){
           let movieTitle = data.body.results[i].title;
           let movieID = data.body.results[i].id;
-          console.log('Title:', movieTitle, 'ID:', movieID);
+          let release = data.body.results[i].release_date
+          console.log('Title:', movieTitle, 'Release:', release, 'ID:', movieID);
         }
         // res.send(data.body.results);
       })

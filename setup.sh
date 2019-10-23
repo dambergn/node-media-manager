@@ -17,8 +17,8 @@ else
   echo "Paste your API key for the TV Database and hit Enter."
   read TVDB_API_KEY
   echo "TVDB_API_KEY=$TVDB_API_KEY" >> .env
-  # echo "Paster your API key for the Movie Database and hit Enter."
-  # read TMDB_API_KEY
+  echo "Paster your API key for the Movie Database and hit Enter."
+  read TMDB_API_KEY
   echo "TMDB_API_KEY=$TMDB_API_KEY" >> .env
 fi
 
