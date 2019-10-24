@@ -24,8 +24,8 @@ exports.searchMovie = function (movieName) {
         for(let i = 0; i < data.body.results.length; i++){
           let movieTitle = data.body.results[i].title;
           let movieID = data.body.results[i].id;
-          let release = data.body.results[i].release_date
-          console.log('Title:', movieTitle, 'Release:', release, 'ID:', movieID);
+          let release = data.body.results[i].release_date.split('-');
+          console.log('Title:', movieTitle, 'Release:', release[0], 'ID:', movieID);
         }
         // res.send(data.body.results);
       })
@@ -47,7 +47,8 @@ exports.saveMovie = function (movieName) {
 }
 
 function saveToJSON(data) {
-  let formattedFileName = data.title;
+  let year = data.release_date.split('-');
+  let formattedFileName = `${data.title} (${year[0]})`;
   if (!fs.existsSync(scanLocation)) {
     fs.mkdirSync(scanLocation);
   };
