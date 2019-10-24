@@ -24,6 +24,7 @@ const cmd = require('node-cmd');
 const webAPI = require('./modules/webAPI.js');
 const TVDBapi = require('./modules/thetvdb.js');
 const TMDBapi = require('./modules/theMoviedb.js');
+const myAL = require('./modules/myanimelist.js');
 const scan = require('./modules/media-scanner.js');
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -78,7 +79,7 @@ rl.on('line', (input) => {
     } else if (input.split(' ')[1] === 'anime') { // Anime
       console.log('Anime search is not yet available')
     } else { // Error
-      console.log('A proper search was not entered')
+      console.log('Please select movie, show, or anime to search')
     }
   } else if (input.split(' ')[0] === 'save') {
     if (input.split(' ')[1] === 'movie') { // Movie
@@ -88,7 +89,7 @@ rl.on('line', (input) => {
     } else if (input.split(' ')[1] === 'anime') { // Anime
       console.log('Anime save is not yet available')
     } else { // Error
-      console.log('A proper search was not entered')
+      console.log('Please select movie, show, or anime to save')
     } 
   } else if (input.split(' ')[0] === 'clear') {
     clearFolder();
@@ -100,8 +101,8 @@ rl.on('line', (input) => {
     getSeriesFanArtByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'getposter') {
     getSeriesPostersByID(input.substr(input.indexOf(' ') + 1));
-  } else if (input.split(' ')[0] === 'savetotxt') {
-    episodesToText.saveToTextFile(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'test') {
+    myAL.searchAnime(input.substr(input.indexOf(' ') + 1));
   } else if (input === 'scan') {
     scan.scanFolder();
   } else if (input === 'update') {
