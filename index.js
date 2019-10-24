@@ -103,6 +103,8 @@ rl.on('line', (input) => {
     getSeriesPostersByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'test') {
     myAL.searchAnime(input.substr(input.indexOf(' ') + 1));
+  } else if (input.split(' ')[0] === 'test2') {
+    myAL.animeByID(input.substr(input.indexOf(' ') + 1));
   } else if (input === 'scan') {
     scan.scanFolder();
   } else if (input === 'update') {

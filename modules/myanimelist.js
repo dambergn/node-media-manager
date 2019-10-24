@@ -46,3 +46,10 @@ exports.searchAnime = function (animeName) {
     // }
   });
 }
+
+exports.animeByID = function (aid) {
+  let anime = Mal.anime(aid);
+  anime.info().then(data => {
+    console.log(data.data);
+  })
+}
