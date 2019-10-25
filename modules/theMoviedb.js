@@ -21,7 +21,7 @@ exports.searchMovie = function (movieName) {
     let url_search = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${movieName}`;
     superAgent.get(url_search)
       .then(data => {
-        for(let i = 0; i < data.body.results.length; i++){
+        for (let i = 0; i < data.body.results.length; i++) {
           let movieTitle = data.body.results[i].title;
           let movieID = data.body.results[i].id;
           let release = data.body.results[i].release_date.split('-');
@@ -79,7 +79,7 @@ let download = function (uri, filename, callback) {
   });
 };
 
-function downloadImages (data, name) {
+function downloadImages(data, name) {
   let url = 'https://image.tmdb.org/t/p/original';
   console.log('downloadIMG: ', url + data.backdrop_path, scanLocation + name + '/img')
   // Backdrop Poster
@@ -91,20 +91,27 @@ function downloadImages (data, name) {
   };
 
   // Backdrops
-  for (let i = 0; i < data.images.backdrops.length; i++){
+  for (let i = 0; i < data.images.backdrops.length; i++) {
     let fileExt = data.images.backdrops[i].file_path.substr(data.images.backdrops[i].file_path.lastIndexOf('.') + 1);
     let fileName = data.title + ' - fanart' + n(i) + `[${data.images.backdrops[i].height}x${data.images.backdrops[i].width}].${fileExt}`;
 
-    download(url + data.images.backdrops[i].file_path, scanLocation + name + '/img/' + fileName, function () {
-    });
+    setTimeout(function () {
+      download(url + data.images.backdrops[i].file_path, scanLocation + name + '/img/' + fileName, function () {
+      });
+    }, 500);
+    if(i == data.images.backdrops.length){
+      console.log('Backdrops download complete');
+    }
   }
 
   // Posters
-  for (let i = 0; i < data.images.posters.length; i++){
-    let fileExt = data.images.posters[i].file_path.substr(data.images.posters[i].file_path.lastIndexOf('.') + 1);
-    let fileName = data.title + ' - posters' + n(i) + `[${data.images.posters[i].height}x${data.images.posters[i].width}].${fileExt}`;
+  for (let j = 0; j < data.images.posters.length; j++) {
+    let fileExt = data.images.posters[j].file_path.substr(data.images.posters[j].file_path.lastIndexOf('.') + 1);
+    let fileName = data.title + ' - posters' + n(j) + `[${data.images.posters[j].height}x${data.images.posters[j].width}].${fileExt}`;
 
-    download(url + data.images.posters[i].file_path, scanLocation + name + '/img/' + fileName, function () {
-    });
+    setTimeout(function () {
+      download(url + data.images.posters[j].file_path, scanLocation + name + '/img/' + fileName, function () {
+      });
+    }, 500);
   }
 };

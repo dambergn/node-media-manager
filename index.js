@@ -77,9 +77,9 @@ rl.on('line', (input) => {
     } else if (input.split(' ')[1] === 'show') { // TVShow
       TVDBapi.getSeries(input.substr(input.indexOf(' ') + 6));
     } else if (input.split(' ')[1] === 'anime') { // Anime
-      console.log('Anime search is not yet available')
+      console.log('Anime search is not yet available');
     } else { // Error
-      console.log('Please select movie, show, or anime to search')
+      console.log('Please select movie, show, or anime to search');
     }
   } else if (input.split(' ')[0] === 'save') {
     if (input.split(' ')[1] === 'movie') { // Movie
@@ -87,9 +87,9 @@ rl.on('line', (input) => {
     } else if (input.split(' ')[1] === 'show'){ // TVShow
       TVDBapi.getSeriesAllByID(input.substr(input.indexOf(' ') + 6));
     } else if (input.split(' ')[1] === 'anime') { // Anime
-      console.log('Anime save is not yet available')
+      console.log('Anime save is not yet available');
     } else { // Error
-      console.log('Please select movie, show, or anime to save')
+      console.log('Please select movie, show, or anime to save');
     } 
   } else if (input.split(' ')[0] === 'clear') {
     clearFolder();
