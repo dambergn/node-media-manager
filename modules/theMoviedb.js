@@ -46,9 +46,21 @@ exports.saveMovie = function (movieName) {
   });
 }
 
+function filenameFormat(file){
+  // console.log('formatting:', file)
+  let formatted = ""
+  if(file === null){
+    // console.log('null')
+    formatted = 'NA'
+  } else {
+    formatted = file.replace(':', ',').replace('\'', '').replace('?', '');
+  } 
+  return formatted
+}
+
 function saveToJSON(data) {
   let year = data.release_date.split('-');
-  let formattedFileName = `${data.title} (${year[0]})`;
+  let formattedFileName = `${filenameFormat(data.title)} (${year[0]})`;
   if (!fs.existsSync(scanLocation)) {
     fs.mkdirSync(scanLocation);
   };
