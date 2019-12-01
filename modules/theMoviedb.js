@@ -127,3 +127,5 @@ function downloadImages(data, name) {
     }, 500);
   }
 };
+
+// Had to make a stupid push to get updates to pull at another location
