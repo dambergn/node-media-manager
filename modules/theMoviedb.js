@@ -105,7 +105,7 @@ function downloadImages(data, name) {
   // Backdrops
   for (let i = 0; i < data.images.backdrops.length; i++) {
     let fileExt = data.images.backdrops[i].file_path.substr(data.images.backdrops[i].file_path.lastIndexOf('.') + 1);
-    let fileName = data.title + ' - fanart' + n(i) + `[${data.images.backdrops[i].height}x${data.images.backdrops[i].width}].${fileExt}`;
+    let fileName = filenameFormat(data.title) + ' - fanart' + n(i) + `[${data.images.backdrops[i].height}x${data.images.backdrops[i].width}].${fileExt}`;
 
     setTimeout(function () {
       download(url + data.images.backdrops[i].file_path, scanLocation + name + '/img/' + fileName, function () {
@@ -119,7 +119,7 @@ function downloadImages(data, name) {
   // Posters
   for (let j = 0; j < data.images.posters.length; j++) {
     let fileExt = data.images.posters[j].file_path.substr(data.images.posters[j].file_path.lastIndexOf('.') + 1);
-    let fileName = data.title + ' - posters' + n(j) + `[${data.images.posters[j].height}x${data.images.posters[j].width}].${fileExt}`;
+    let fileName = filenameFormat(data.title) + ' - posters' + n(j) + `[${data.images.posters[j].height}x${data.images.posters[j].width}].${fileExt}`;
 
     setTimeout(function () {
       download(url + data.images.posters[j].file_path, scanLocation + name + '/img/' + fileName, function () {

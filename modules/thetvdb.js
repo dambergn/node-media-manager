@@ -108,16 +108,16 @@ let download = function (uri, filename, callback) {
   });
 };
 
-function filenameFormat(file){
+function filenameFormat(file) {
   // console.log('formatting:', file)
   let formatted = ""
-  if(file === null){
+  if (file === null) {
     // console.log('null')
     formatted = 'NA'
   } else {
     formatted = file.replace(':', ',').replace('\'', '').replace('?', '').replace('/', '');
   }
-  
+
   return formatted
 }
 
@@ -164,7 +164,7 @@ function TVDBdownloadThumbnails(data) {
     let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes[i].filename;
     // console.log('Thumbnail URL:', downloadURL)
     let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
-    if(fileExt != 'jpg' || fileExt != 'png'){
+    if (fileExt != 'jpg' || fileExt != 'png') {
       fileExt = 'jpg'
     }
     // console.log('thumbnail ext:', fileExt)
@@ -174,9 +174,13 @@ function TVDBdownloadThumbnails(data) {
       saveFileName = scanLocation + formattedFileName + '/Specials/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
     } else {
       let episodeName = filenameFormat(data.episodes[i].episodeName);
-      saveFileName = scanLocation + formattedFileName + '/Season' + n(data.episodes[i].airedSeason) + '/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
+      if (data.episodes[i].airedSeason > 1000) {
+        saveFileName = scanLocation + formattedFileName + '/Season' + data.episodes[i].airedSeason + '/' + formattedFileName + ' - S' + data.episodes[i].airedSeason + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
+      } else {
+        saveFileName = scanLocation + formattedFileName + '/Season' + n(data.episodes[i].airedSeason) + '/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
+      }
     }
-    if(data.episodes[i].episodeName != null && data.episodes[i].thumbWidth != null) {
+    if (data.episodes[i].episodeName != null && data.episodes[i].thumbWidth != null) {
       download(downloadURL, saveFileName, function () { });
     }
   }
@@ -245,13 +249,19 @@ function generateFileNames(data) {
     return n > 9 ? "" + n : "0" + n;
   };
   for (let i = 0; i < data.episodes.length; i++) {
-    let season = n(data.episodes[i].airedSeason);
+    let season = '';
     let episodeNumber = n(data.episodes[i].airedEpisodeNumber);
     let episodeName = filenameFormat(data.episodes[i].episodeName);
 
     let fileName = filenameFormat(data.seriesName) + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
 
-    episodes[data.episodes[i].airedSeason].push(fileName);
+    if (data.episodes[i].airedSeason > 1000) {
+      season = data.episodes[i].airedSeason
+      console.log("fileName:", episodes);
+    } else {
+      season = n(data.episodes[i].airedSeason);
+      episodes[data.episodes[i].airedSeason].push(fileName);
+    }
   };
 };
 
@@ -324,9 +334,15 @@ function createSeasonsFolders(data) {
         fs.mkdirSync(`${scanLocation}${formattedFileName}/Extras`);
       };
     } else {
-      if (!fs.existsSync(`${scanLocation}${formattedFileName}/Season${n(i)}`)) {
-        fs.mkdirSync(`${scanLocation}${formattedFileName}/Season${n(i)}`);
-      };
+      if (data.episodes[i].airedSeason > 100) {
+        if (!fs.existsSync(`${scanLocation}${formattedFileName}/Season${data.episodes[i].airedSeason}`)) {
+          fs.mkdirSync(`${scanLocation}${formattedFileName}/Season${data.episodes[i].airedSeason}`);
+        }
+      } else {
+        if (!fs.existsSync(`${scanLocation}${formattedFileName}/Season${n(i)}`)) {
+          fs.mkdirSync(`${scanLocation}${formattedFileName}/Season${n(i)}`);
+        };
+      }
     }
   }
   TVDBdownloadThumbnails(data);
