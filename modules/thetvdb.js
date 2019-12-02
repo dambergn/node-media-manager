@@ -115,7 +115,7 @@ function filenameFormat(file) {
     // console.log('null')
     formatted = 'NA'
   } else {
-    formatted = file.replace(':', ',').replace('\'', '').replace('?', '').replace('/', '');
+    formatted = file.replace(':', ',').replace('\'', '').replace('?', '').replace('/', '').replace('*', '');
   }
 
   return formatted
