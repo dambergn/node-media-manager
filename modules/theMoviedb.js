@@ -93,7 +93,7 @@ let download = function (uri, filename, callback) {
 
 function downloadImages(data, name) {
   let url = 'https://image.tmdb.org/t/p/original';
-  console.log('downloadIMG: ', url + data.backdrop_path, scanLocation + name + '/img')
+  // console.log('downloadIMG: ', url + data.backdrop_path, scanLocation + name + '/img')
   // Backdrop Poster
   download(url + data.backdrop_path, scanLocation + name + '/img' + data.backdrop_path, function () {
   });
