@@ -22,7 +22,7 @@ const readline = require('readline');
 const cmd = require('node-cmd');
 
 const webAPI = require('./modules/webAPI.js');
-const TVDBapi = require('./modules/thetvdb.js');
+const TVDBapi = require('./modules/thetvdb_v2.js');
 const TMDBapi = require('./modules/theMoviedb.js');
 const myAL = require('./modules/myanimelist.js');
 const scan = require('./modules/media-scanner.js');
@@ -75,7 +75,7 @@ rl.on('line', (input) => {
       // console.log('Searching for:', input.substr(input.indexOf(' ') + 7))
       TMDBapi.searchMovie(input.substr(input.indexOf(' ') + 7));
     } else if (input.split(' ')[1] === 'show') { // TVShow
-      TVDBapi.getSeries(input.substr(input.indexOf(' ') + 6));
+      TVDBapi.TVDB_search_name(input.substr(input.indexOf(' ') + 6));
     } else if (input.split(' ')[1] === 'anime') { // Anime
       // console.log('Anime search is not yet available');
       myAL.searchAnime(input.substr(input.indexOf(' ') + 1));
@@ -86,7 +86,7 @@ rl.on('line', (input) => {
     if (input.split(' ')[1] === 'movie') { // Movie
       TMDBapi.saveMovie(input.substr(input.indexOf(' ') + 7));
     } else if (input.split(' ')[1] === 'show'){ // TVShow
-      TVDBapi.getSeriesAllByID(input.substr(input.indexOf(' ') + 6));
+      TVDBapi.TVDB_save_by_id(input.substr(input.indexOf(' ') + 6));
     } else if (input.split(' ')[1] === 'anime') { // Anime
       console.log('Anime save is not yet available');
     } else { // Error
