@@ -77,7 +77,8 @@ rl.on('line', (input) => {
     } else if (input.split(' ')[1] === 'show') { // TVShow
       TVDBapi.getSeries(input.substr(input.indexOf(' ') + 6));
     } else if (input.split(' ')[1] === 'anime') { // Anime
-      console.log('Anime search is not yet available');
+      // console.log('Anime search is not yet available');
+      myAL.searchAnime(input.substr(input.indexOf(' ') + 1));
     } else { // Error
       console.log('Please select movie, show, or anime to search');
     }
@@ -102,7 +103,7 @@ rl.on('line', (input) => {
   } else if (input.split(' ')[0] === 'getposter') {
     getSeriesPostersByID(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'test') {
-    myAL.searchAnime(input.substr(input.indexOf(' ') + 1));
+    myAL.searchAnimeTest(input.substr(input.indexOf(' ') + 1));
   } else if (input.split(' ')[0] === 'test2') {
     myAL.animeByID(input.substr(input.indexOf(' ') + 1));
   } else if (input === 'scan') {
