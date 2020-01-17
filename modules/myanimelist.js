@@ -37,12 +37,25 @@ exports.searchAnime = function (animeName) {
     type: Mal.types.AnimeType.tv
   })
   .then(data => {
-    console.log(data.data.results[0])
+    for(let i = 0; i < 5; i++){
+      let title = data.data.results[i].title
+      let id = data.data.results[i].mal_id
+      console.log('Name:', title, 'ID:', id);
+    }
+  });
+}
 
-    // for(let i = 0; i < data.data.results.length; i++){
-    //   let title = data.data.results[i].title
-    //   let id = data.data.results[i].mal_id
-    //   console.log('Name:', title, 'ID:', id);
+exports.searchAnimeTest = function (animeName) {
+  Mal.search().anime({ 
+    q: animeName,
+    type: Mal.types.AnimeType.tv
+  })
+  .then(data => {
+    console.log(data.data.results[0]);
+    // for(let i = 0; i < 5; i++){
+    //   // let title = data.data.results[i].title
+    //   // let id = data.data.results[i].mal_id
+    //   console.log(data.data.results[i]);
     // }
   });
 }
@@ -50,6 +63,7 @@ exports.searchAnime = function (animeName) {
 exports.animeByID = function (aid) {
   let anime = Mal.anime(aid);
   anime.info().then(data => {
-    console.log(data.data);
+
+    console.log(data.data.related);
   })
 }
