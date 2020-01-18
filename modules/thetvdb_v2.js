@@ -11,12 +11,13 @@ const TVDBapi = require('./thetvdb_v2.js');
 let scanLocation = 'downloads/'
 
 // The TVDB
+let TVDB_token = {}
 const TheTVDB_URL = 'https://api.thetvdb.com';
-const TVDB_KEY = process.env.TVDB_API_KEY;
-const TVDB_API_VERSION = 'v2.1.1';
+// const TVDB_API_VERSION = 'v2.1.1';
+const TVDB_API_VERSION = 'v3.0.0';
 const TVDB_AV_HEADER = `application/vnd.thetvdb.${TVDB_API_VERSION}`;
 
-let TVDB_token = {}
+
 
 function getToken() {
   fetch(`${TheTVDB_URL}/login`, {
@@ -61,7 +62,7 @@ exports.TVDB_search_name = function (search) {
   fetch(`${TheTVDB_URL}/search/series?name=${search}`, {
     method: 'get',
     headers: {
-      'Accept': 'application/json',
+      'Accept': TVDB_AV_HEADER,
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + TVDB_token.token,
     },
@@ -80,10 +81,11 @@ let results = {}
 exports.TVDB_save_by_id = async function (search) { //275274
   
   function TVDB_get_by_id(search) {
+    setTimeout(function(){ 
     fetch(`${TheTVDB_URL}/series/${search}`, {
       method: 'get',
       headers: {
-        'Accept': 'application/json',
+        'Accept': TVDB_AV_HEADER,
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + TVDB_token.token,
       },
@@ -91,8 +93,12 @@ exports.TVDB_save_by_id = async function (search) { //275274
       .then(res => res.json())
       .then(json => {
         results.info = json.data
-        TVDB_get_episodes_by_id(search)
+        
+          TVDB_get_episodes_by_id(search) 
+        
+        
       });
+    }, 3000);
   }
   TVDB_get_by_id(search)
 
@@ -100,7 +106,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
     fetch(`${TheTVDB_URL}/series/${search}/episodes`, {
       method: 'get',
       headers: {
-        'Accept': 'application/json',
+        'Accept': TVDB_AV_HEADER,
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + TVDB_token.token,
       },
@@ -118,7 +124,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
       fetch(`${TheTVDB_URL}/series/${search}/images`, {
         method: 'get',
         headers: {
-          'Accept': 'application/json',
+          'Accept': TVDB_AV_HEADER,
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + TVDB_token.token,
         },
@@ -135,7 +141,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
       fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=poster`, {
         method: 'get',
         headers: {
-          'Accept': 'application/json',
+          'Accept': TVDB_AV_HEADER,
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + TVDB_token.token,
         },
@@ -152,7 +158,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
       fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=fanart`, {
         method: 'get',
         headers: {
-          'Accept': 'application/json',
+          'Accept': TVDB_AV_HEADER,
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + TVDB_token.token,
         },
@@ -169,7 +175,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
       fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=season`, {
         method: 'get',
         headers: {
-          'Accept': 'application/json',
+          'Accept': TVDB_AV_HEADER,
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + TVDB_token.token,
         },
@@ -186,7 +192,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
       fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=series`, {
         method: 'get',
         headers: {
-          'Accept': 'application/json',
+          'Accept': TVDB_AV_HEADER,
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + TVDB_token.token,
         },
@@ -206,7 +212,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
     fetch(`${TheTVDB_URL}/series/${search}/actors`, {
       method: 'get',
       headers: {
-        'Accept': 'application/json',
+        'Accept': TVDB_AV_HEADER,
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + TVDB_token.token,
       },

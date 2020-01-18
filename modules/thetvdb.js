@@ -27,7 +27,9 @@ exports.getSeries = function (seriesName) {
           id: response[i].id
         }
         results.push(series);
-        console.log('name:', response[i].seriesName, 'ID:', response[i].id);
+        console.log('Name:', response[i].seriesName, '| Released:', response[i].firstAired.split('-')[0], '| ID:', response[i].id);
+        // console.log("Name:", json.data[i].seriesName, "| Released:", json.data[i].firstAired.split('-')[0], "| Status:", json.data[i].status, "| ID:", json.data[i].id)
+
       };
       // console.log(results);
       return results;
