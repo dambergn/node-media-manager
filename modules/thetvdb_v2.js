@@ -76,8 +76,9 @@ exports.TVDB_search_name = function (search) {
     });
 }
 
+let results = {}
 exports.TVDB_save_by_id = async function (search) { //275274
-  let results = {}
+  
   function TVDB_get_by_id(search) {
     fetch(`${TheTVDB_URL}/series/${search}`, {
       method: 'get',
@@ -112,22 +113,94 @@ exports.TVDB_save_by_id = async function (search) { //275274
   }
 
   function TVDB_get_images_by_id(search) {
-    fetch(`${TheTVDB_URL}/series/${search}/images/query/params`, {
-      method: 'get',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + TVDB_token.token,
-      },
-    })
-      .then(res => res.json())
-      .then(json => {
-        console.log("IMAGES:", json)
-        // return json.data
-        // results.images = json.data
-        TVDB_get_cast_by_id(search)
-      });
+    results.images = {}
+    function get_summary(){
+      fetch(`${TheTVDB_URL}/series/${search}/images`, {
+        method: 'get',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images = json.data
+          get_posters()
+        });
+    }
+
+    function get_posters(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=poster`, {
+        method: 'get',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.poster = json.data
+          get_fanart()
+        });
+    }
+
+    function get_fanart(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=fanart`, {
+        method: 'get',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.fanart = json.data
+          get_season()
+        });
+    }
+
+    function get_season(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=season`, {
+        method: 'get',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.season = json.data
+          get_series()
+        });
+    }
+
+    function get_series(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=series`, {
+        method: 'get',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.series = json.data
+          TVDB_get_cast_by_id(search)
+        });
+    }
+    get_summary()
   }
+
 
   function TVDB_get_cast_by_id(search) {
     fetch(`${TheTVDB_URL}/series/${search}/actors`, {
@@ -144,7 +217,7 @@ exports.TVDB_save_by_id = async function (search) { //275274
         results.cast = json.data
         // console.log("results:", results.info)
         saveToJSON(results)
-        // createSeasonsFolders(response);
+        createSeasonsFolders(results);
       });
   }
 }
@@ -336,9 +409,9 @@ function generateTextEpisodeList(data) {
     flags: 'a' // 'a' means appending (old data will be preserved)
   })
 
-  text.write(data.seriesName + '\n') // append string to your file
+  text.write(data.info.seriesName + '\n') // append string to your file
   text.write('' + '\n') // Blank Space
-  text.write(data.overview + '\n') // again
+  text.write(data.info.overview + '\n') // again
   text.write('' + '\n') // Blank Space
 
   function n(n) {
@@ -367,7 +440,7 @@ let saveToTextFile = function (folder, data) {
 };
 
 function createSeasonsFolders(data) {
-  let seasons = findNumberOfSeasons(data)
+  let seasons = findNumberOfSeasons(data.episodes)
   let formattedFileName = filenameFormat(data.info.seriesName);
 
   function n(n) {
