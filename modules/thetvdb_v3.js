@@ -1,108 +1,232 @@
-'use strict';
-// 'v1.0'
+'use strict'
 
 require('dotenv').config();
 const fs = require('fs');
-const request = require('node-fetch');
+const fetch = require('node-fetch');
 const requestURL = require('request');
 const bodyParser = require('body-parser');
+
+const TVDBapi = require('./thetvdb_v2.js');
 
 let scanLocation = 'downloads/'
 
 // The TVDB
+let TVDB_token = {}
 const TheTVDB_URL = 'https://api.thetvdb.com';
-const TVDB_KEY = process.env.TVDB_API_KEY;
-const TVDB_API_VERSION = 'v2.1.1';
+// const TVDB_API_VERSION = 'v2.1.1';
+const TVDB_API_VERSION = 'v3.0.0';
 const TVDB_AV_HEADER = `application/vnd.thetvdb.${TVDB_API_VERSION}`;
-const TVDB = require('node-tvdb');
-const tvdb = new TVDB(TVDB_KEY);
 
-exports.getSeries = function (seriesName) {
-  let results = [];
-  tvdb.getSeriesByName(seriesName)
-    .then(response => {
-      for (let i = 0; i < response.length; i++) {
-        let series = {
-          name: response[i].seriesName,
-          id: response[i].id
-        }
-        results.push(series);
-        console.log('Name:', response[i].seriesName, '| Released:', response[i].firstAired.split('-')[0], '| ID:', response[i].id);
-        // console.log("Name:", json.data[i].seriesName, "| Released:", json.data[i].firstAired.split('-')[0], "| Status:", json.data[i].status, "| ID:", json.data[i].id)
 
-      };
-      // console.log(results);
-      return results;
+
+function getToken() {
+  fetch(`${TheTVDB_URL}/login`, {
+    method: 'post',
+    body: JSON.stringify({
+      "apikey": process.env.TVDB_API_KEY,
+      "userkey": process.env.TVDB_USR_KEY,
+      "username": process.env.TVDB_USRNAME
+    }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+    .then(res => res.json())
+    .then(json => {
+      console.log(json)
+      TVDB_token = json
+      // return json
+    });
+}
+getToken()
+// TVDB_token = getToken()
+
+function refreshToken() {
+  fetch(`${TheTVDB_URL}/refresh_token`, {
+    method: 'get',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + TVDB_token.token,
+    },
+  })
+    .then(res => res.json())
+    .then(json => {
+      // console.log("results:", json)
+      TVDB_token = JSON.parse(json)
+    });
+}
+// refreshToken()
+
+exports.TVDB_search_name = function (search) {
+  search = search.replace(/ /g, '%20')
+  // console.log("searching for:", search)
+  fetch(`${TheTVDB_URL}/search/series?name=${search}`, {
+    method: 'get',
+    headers: {
+      'Accept': TVDB_AV_HEADER,
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + TVDB_token.token,
+    },
+  })
+    .then(res => res.json())
+    .then(json => {
+      for (let i = 0; i < json.data.length; i++) {
+        console.log("Name:", json.data[i].seriesName, "| Released:", json.data[i].firstAired.split('-')[0], "| Status:", json.data[i].status, "| ID:", json.data[i].id)
+        // console.log("temp:", json.data)
+      }
+      // return json
+    });
+}
+
+let results = {}
+exports.TVDB_save_by_id = async function (search) { //275274
+  
+  function TVDB_get_by_id(search) {
+    setTimeout(function(){ 
+    fetch(`${TheTVDB_URL}/series/${search}`, {
+      method: 'get',
+      headers: {
+        'Accept': TVDB_AV_HEADER,
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TVDB_token.token,
+      },
     })
-    .catch(error => { throw (error) });
-};
+      .then(res => res.json())
+      .then(json => {
+        results.info = json.data
+        
+          TVDB_get_episodes_by_id(search) 
+        
+        
+      });
+    }, 3000);
+  }
+  TVDB_get_by_id(search)
 
-exports.getSeriesNameAPI = function (seriesName) {
-  let results = [];
-  tvdb.getSeriesByName(seriesName)
-    .then(response => {
-      for (let i = 0; i < response.length; i++) {
-        let series = {
-          name: response[i].seriesName,
-          id: response[i].id
-        }
-        results.push(series);
-        // console.log('name:', response[i].seriesName, 'ID:', response[i].id);
-      };
-      // console.log('TVDB Raw:', JSON.stringify(results));
-      return JSON.stringify(results);
+  function TVDB_get_episodes_by_id(search) {
+    fetch(`${TheTVDB_URL}/series/${search}/episodes`, {
+      method: 'get',
+      headers: {
+        'Accept': TVDB_AV_HEADER,
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TVDB_token.token,
+      },
     })
-    .catch(error => { throw (error) });
-};
+      .then(res => res.json())
+      .then(json => {
+        results.episodes = json.data
+        TVDB_get_images_by_id(search)
+      });
+  }
 
-function getSeriesID(seriesID) {
-  tvdb.getSeriesById(seriesID)
-    .then(response => { console.log(response) })
-    .catch(error => { throw (error) });
-};
+  function TVDB_get_images_by_id(search) {
+    results.images = {}
+    function get_summary(){
+      fetch(`${TheTVDB_URL}/series/${search}/images`, {
+        method: 'get',
+        headers: {
+          'Accept': TVDB_AV_HEADER,
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images = json.data
+          get_posters()
+        });
+    }
 
-function getEpisodesByID(seriesID) {
-  tvdb.getEpisodesSummaryBySeriesId(seriesID)
-    .then(response => { console.log(response) })
-    .catch(error => { throw (error) });
-};
+    function get_posters(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=poster`, {
+        method: 'get',
+        headers: {
+          'Accept': TVDB_AV_HEADER,
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.poster = json.data
+          get_fanart()
+        });
+    }
 
-exports.getSeriesAllByID = function (seriesID) {
-  tvdb.getSeriesAllById(seriesID)
-    .then(response => {
-      response; // contains series data (i.e. `id`, `seriesName`)
-      response.episodes; // contains an array of episodes
-      // console.log(response);
-      saveToJSON(response);
-      createSeasonsFolders(response);
+    function get_fanart(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=fanart`, {
+        method: 'get',
+        headers: {
+          'Accept': TVDB_AV_HEADER,
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.fanart = json.data
+          get_season()
+        });
+    }
+
+    function get_season(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=season`, {
+        method: 'get',
+        headers: {
+          'Accept': TVDB_AV_HEADER,
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.season = json.data
+          get_series()
+        });
+    }
+
+    function get_series(){
+      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=series`, {
+        method: 'get',
+        headers: {
+          'Accept': TVDB_AV_HEADER,
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TVDB_token.token,
+        },
+      })
+        .then(res => res.json())
+        .then(json => {
+          // console.log("IMAGES:", json)
+          results.images.series = json.data
+          TVDB_get_cast_by_id(search)
+        });
+    }
+    get_summary()
+  }
+
+
+  function TVDB_get_cast_by_id(search) {
+    fetch(`${TheTVDB_URL}/series/${search}/actors`, {
+      method: 'get',
+      headers: {
+        'Accept': TVDB_AV_HEADER,
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + TVDB_token.token,
+      },
     })
-    .catch(error => { throw (error) });
-};
-
-function getSeriesBannerByID(seriesID) {
-  tvdb.getSeriesBanner(seriesID)
-    .then(response => { console.log(response) })
-    .catch(error => { throw (error) });
-};
-
-function getSeriesFanArtByID(name, seriesID, response) {
-  tvdb.getSeriesImages(seriesID, 'fanart')
-    .then(response => {
-      // console.log(response);
-      TVDBdownloadFanart(name, seriesID, response);
-      return response
-    })
-    .catch(error => { throw (error) });
-};
-
-function getSeriesPostersByID(name, seriesID) {
-  tvdb.getSeriesPosters(seriesID)
-    .then(response => {
-      TVDBdownloadPosters(name, seriesID, response);
-      return response
-    })
-    .catch(error => { throw (error) });
-};
+      .then(res => res.json())
+      .then(json => {
+        // console.log("results:", json)
+        results.cast = json.data
+        // console.log("results:", results.info)
+        saveToJSON(results)
+        createSeasonsFolders(results);
+      });
+  }
+}
 
 let download = function (uri, filename, callback) {
   requestURL.head(uri, function (err, res, body) {
@@ -188,7 +312,8 @@ function TVDBdownloadThumbnails(data) {
 };
 
 function saveToJSON(data) {
-  let formattedFileName = filenameFormat(data.seriesName);
+  // console.log("save to json:", data.info.seriesName)
+  let formattedFileName = filenameFormat(data.info.seriesName);
   if (!fs.existsSync(scanLocation)) {
     fs.mkdirSync(scanLocation);
   };
@@ -206,79 +331,61 @@ function saveToJSON(data) {
     if (err) {
       return console.log(err);
     };
-    console.log("JSON file saved!");
+    console.log("The file was saved!");
     saveToTextFile(`${scanLocation}${formattedFileName}/`, data);
   });
 
-  getSeriesPostersByID(data.seriesName, data.id);
-  getSeriesFanArtByID(data.seriesName, data.id);
+  // getSeriesPostersByID(data.info.seriesName, data.info.id);
+  // getSeriesFanArtByID(data.info.seriesName, data.info.id);
 
 };
 
 // Save Episodes to Human Readable Text File
 let filePath = '';
 let episodes = [];
-let numOfSeasons = '';
 
 //How many seasons in series
 function findNumberOfSeasons(data) {
-  // console.log("data:", data.episodes.length)
+  // console.log("find num Seasons:", data)
   let count = 0;
   let found = [];
-  for (let i = 0; i < data.episodes.length; i++) {
-    if (found.includes(data.episodes[i].airedSeason)){
-      // Episode exists in list
-   } else {
-    count++;
-    found.push(data.episodes[i].airedSeason);
-   }
+  for (let i = 0; i < data.length; i++) {
 
+    if (typeof found[data[i].airedSeason] === 'undefined') {
+      // does not exist
+      count++;
+      found.push(data[i].airedSeason);
+    } else {
+      // does exist
+    }
   };
-  // console.log("number of seasons", count)
-  numOfSeasons = count;
   return count;
 };
 
 //Generate 3D array for seasons
 function generateArray(data) {
   episodes = [];
-  for (let i = 0; i < numOfSeasons; i++) {
+  for (let i = 0; i < findNumberOfSeasons(data.episodes); i++) {
     episodes.push(new Array());
   }
-  // console.log("generateArray", episodes)
 };
 
 //Populates 3D array of seasons and episode names
 function generateFileNames(data) {
+  // console.log("generateFileNames:", data)
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
   };
-  let yearArray = [0];
-  // for (let i = 0; i < numOfSeasons; i++) {
-  //   yearArray.push('');
-  // }
   for (let i = 0; i < data.episodes.length; i++) {
     let season = '';
     let episodeNumber = n(data.episodes[i].airedEpisodeNumber);
     let episodeName = filenameFormat(data.episodes[i].episodeName);
 
-    let fileName = filenameFormat(data.seriesName) + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
-    // console.log("Years:", yearCount, "Seasons:", seasonCount, "Season:", episodes)
-    let seasonID = data.episodes[i].airedSeason
-    if (data.episodes[i].airedSeason === 0){
-      season = data.episodes[i].airedSeason
-      episodes[seasonID].push(fileName);
-      // yearArray[0].push(0);
-    } else if (data.episodes[i].airedSeason > 1000) {
-      if (yearArray.includes(data.episodes[i].airedSeason)){
+    let fileName = filenameFormat(data.info.seriesName) + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
 
-      } else {
-        yearArray.push(data.episodes[i].airedSeason)
-      }
+    if (data.episodes[i].airedSeason > 1000) {
       season = data.episodes[i].airedSeason
-      
-      // console.log('Season year:', yearArray.indexOf(seasonID), "Year Array:", yearArray)
-      episodes[yearArray.indexOf(seasonID)].push(fileName);
+      console.log("fileName:", episodes);
     } else {
       season = n(data.episodes[i].airedSeason);
       episodes[data.episodes[i].airedSeason].push(fileName);
@@ -308,9 +415,9 @@ function generateTextEpisodeList(data) {
     flags: 'a' // 'a' means appending (old data will be preserved)
   })
 
-  text.write(data.seriesName + '\n') // append string to your file
+  text.write(data.info.seriesName + '\n') // append string to your file
   text.write('' + '\n') // Blank Space
-  text.write(data.overview + '\n') // again
+  text.write(data.info.overview + '\n') // again
   text.write('' + '\n') // Blank Space
 
   function n(n) {
@@ -339,9 +446,8 @@ let saveToTextFile = function (folder, data) {
 };
 
 function createSeasonsFolders(data) {
-  let seasons = findNumberOfSeasons(data)
-  let formattedFileName = filenameFormat(data.seriesName);
-  // console.log(seasons)
+  let seasons = findNumberOfSeasons(data.episodes)
+  let formattedFileName = filenameFormat(data.info.seriesName);
 
   function n(n) {
     return n > 9 ? "" + n : "0" + n;
@@ -356,7 +462,7 @@ function createSeasonsFolders(data) {
         fs.mkdirSync(`${scanLocation}${formattedFileName}/Extras`);
       };
     } else {
-      if (data.episodes[i].airedSeason > 1000) {
+      if (data.episodes[i].airedSeason > 100) {
         if (!fs.existsSync(`${scanLocation}${formattedFileName}/Season${data.episodes[i].airedSeason}`)) {
           fs.mkdirSync(`${scanLocation}${formattedFileName}/Season${data.episodes[i].airedSeason}`);
         }
@@ -367,7 +473,5 @@ function createSeasonsFolders(data) {
       }
     }
   }
-  // TVDBdownloadThumbnails(data);
+  TVDBdownloadThumbnails(data);
 };
-// mythbusters: 73388
-// rick and morty: 275274

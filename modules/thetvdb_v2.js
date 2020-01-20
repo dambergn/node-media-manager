@@ -1,232 +1,235 @@
-'use strict'
+'use strict';
+// 'v1.0'
 
 require('dotenv').config();
 const fs = require('fs');
-const fetch = require('node-fetch');
+const request = require('node-fetch');
 const requestURL = require('request');
+const readline = require('readline');
 const bodyParser = require('body-parser');
 
-const TVDBapi = require('./thetvdb_v2.js');
-
 let scanLocation = 'downloads/'
+let ended = process.env.ENDED
+let continuing = process.env.CONTINUING
+
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout
+// });
 
 // The TVDB
-let TVDB_token = {}
 const TheTVDB_URL = 'https://api.thetvdb.com';
-// const TVDB_API_VERSION = 'v2.1.1';
-const TVDB_API_VERSION = 'v3.0.0';
+const TVDB_KEY = process.env.TVDB_API_KEY;
+const TVDB_API_VERSION = 'v2.1.1';
 const TVDB_AV_HEADER = `application/vnd.thetvdb.${TVDB_API_VERSION}`;
+const TVDB = require('node-tvdb');
+const tvdb = new TVDB(TVDB_KEY);
 
+let seriesResults = '';
 
+// Search for series name
+exports.getSeries = function (seriesName) {
+  let results = [];
+  tvdb.getSeriesByName(seriesName)
+    .then(response => {
+      for (let i = 0; i < response.length; i++) {
+        let series = {
+          name: response[i].seriesName,
+          id: response[i].id
+        }
+        let year = '';
+        if (response[i].firstAired = 'null') {
+          year = 'none'
+        } else {
+          response[i].firstAired.split('-')[0]
+        }
+        results.push(series);
+        console.log('Name:', response[i].seriesName, '| Released:', year, "| Status:", response[i].status, '| ID:', response[i].id);
+      };
+      return results;
+    })
+    .catch(error => { throw (error) });
+};
 
-function getToken() {
-  fetch(`${TheTVDB_URL}/login`, {
-    method: 'post',
-    body: JSON.stringify({
-      "apikey": process.env.TVDB_API_KEY,
-      "userkey": process.env.TVDB_USR_KEY,
-      "username": process.env.TVDB_USRNAME
-    }),
-    headers: { 'Content-Type': 'application/json' },
-  })
-    .then(res => res.json())
-    .then(json => {
-      console.log(json)
-      TVDB_token = json
-      // return json
-    });
-}
-getToken()
-// TVDB_token = getToken()
+exports.getSeriesNameAPI = function (seriesName) {
+  let results = [];
+  tvdb.getSeriesByName(seriesName)
+    .then(response => {
+      for (let i = 0; i < response.length; i++) {
+        let series = {
+          name: response[i].seriesName,
+          id: response[i].id
+        }
+        results.push(series);
+        // console.log('name:', response[i].seriesName, 'ID:', response[i].id);
+      };
+      // console.log('TVDB Raw:', JSON.stringify(results));
+      return JSON.stringify(results);
+    })
+    .catch(error => { throw (error) });
+};
 
-function refreshToken() {
-  fetch(`${TheTVDB_URL}/refresh_token`, {
-    method: 'get',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + TVDB_token.token,
+exports.getSeriesAllByID = function (seriesID) {
+  let results = {
+    info: "",
+    episodes: {
+      summary: "",
+      list: "",
     },
-  })
-    .then(res => res.json())
-    .then(json => {
-      // console.log("results:", json)
-      TVDB_token = JSON.parse(json)
-    });
-}
-// refreshToken()
+    images: {
+      posters: "",
+      fanart: "",
+      banners: "",
+      series: "",
+      seasonPosters: '',
 
-exports.TVDB_search_name = function (search) {
-  search = search.replace(/ /g, '%20')
-  // console.log("searching for:", search)
-  fetch(`${TheTVDB_URL}/search/series?name=${search}`, {
-    method: 'get',
-    headers: {
-      'Accept': TVDB_AV_HEADER,
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + TVDB_token.token,
     },
-  })
-    .then(res => res.json())
-    .then(json => {
-      for (let i = 0; i < json.data.length; i++) {
-        console.log("Name:", json.data[i].seriesName, "| Released:", json.data[i].firstAired.split('-')[0], "| Status:", json.data[i].status, "| ID:", json.data[i].id)
-        // console.log("temp:", json.data)
+    cast: "",
+  };
+  let done = 0;
+  tvdb.getSeriesById(seriesID)
+    .then(response => {
+      results.info = response;
+      console.log("Status:", response.status)
+      if (response.status === "Continuing") {
+        scanLocation = continuing
       }
-      // return json
+      if (response.status === "Ended") {
+        scanLocation = ended
+      }
+      console.log("info done")
+      done++;
+    }).catch(error => {
+      console.log("ERROR, GetSeries:", error);
     });
-}
 
-let results = {}
-exports.TVDB_save_by_id = async function (search) { //275274
-  
-  function TVDB_get_by_id(search) {
-    setTimeout(function(){ 
-    fetch(`${TheTVDB_URL}/series/${search}`, {
-      method: 'get',
-      headers: {
-        'Accept': TVDB_AV_HEADER,
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + TVDB_token.token,
-      },
-    })
-      .then(res => res.json())
-      .then(json => {
-        results.info = json.data
-        
-          TVDB_get_episodes_by_id(search) 
-        
-        
-      });
-    }, 3000);
-  }
-  TVDB_get_by_id(search)
+  tvdb.getEpisodesSummaryBySeriesId(seriesID)
+    .then(response => {
+      results.episodes.summary = response;
+      results.episodes.summary.airedSeasons.sort(function (a, b) { return a - b });
+      console.log("Episode Summary done")
+      done++;
+      nextStep()
+      // console.log("summary:", response) 
+    }).catch(error => { throw (error) });
 
-  function TVDB_get_episodes_by_id(search) {
-    fetch(`${TheTVDB_URL}/series/${search}/episodes`, {
-      method: 'get',
-      headers: {
-        'Accept': TVDB_AV_HEADER,
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + TVDB_token.token,
-      },
-    })
-      .then(res => res.json())
-      .then(json => {
-        results.episodes = json.data
-        TVDB_get_images_by_id(search)
-      });
-  }
-
-  function TVDB_get_images_by_id(search) {
-    results.images = {}
-    function get_summary(){
-      fetch(`${TheTVDB_URL}/series/${search}/images`, {
-        method: 'get',
-        headers: {
-          'Accept': TVDB_AV_HEADER,
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + TVDB_token.token,
-        },
-      })
-        .then(res => res.json())
-        .then(json => {
-          // console.log("IMAGES:", json)
-          results.images = json.data
-          get_posters()
-        });
-    }
-
-    function get_posters(){
-      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=poster`, {
-        method: 'get',
-        headers: {
-          'Accept': TVDB_AV_HEADER,
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + TVDB_token.token,
-        },
-      })
-        .then(res => res.json())
-        .then(json => {
-          // console.log("IMAGES:", json)
-          results.images.poster = json.data
-          get_fanart()
-        });
-    }
-
-    function get_fanart(){
-      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=fanart`, {
-        method: 'get',
-        headers: {
-          'Accept': TVDB_AV_HEADER,
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + TVDB_token.token,
-        },
-      })
-        .then(res => res.json())
-        .then(json => {
-          // console.log("IMAGES:", json)
-          results.images.fanart = json.data
-          get_season()
-        });
-    }
-
-    function get_season(){
-      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=season`, {
-        method: 'get',
-        headers: {
-          'Accept': TVDB_AV_HEADER,
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + TVDB_token.token,
-        },
-      })
-        .then(res => res.json())
-        .then(json => {
-          // console.log("IMAGES:", json)
-          results.images.season = json.data
-          get_series()
-        });
-    }
-
-    function get_series(){
-      fetch(`${TheTVDB_URL}/series/${search}/images/query?keyType=series`, {
-        method: 'get',
-        headers: {
-          'Accept': TVDB_AV_HEADER,
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + TVDB_token.token,
-        },
-      })
-        .then(res => res.json())
-        .then(json => {
-          // console.log("IMAGES:", json)
-          results.images.series = json.data
-          TVDB_get_cast_by_id(search)
-        });
-    }
-    get_summary()
+  function nextStep() {
+    tvdb.getEpisodesBySeriesId(seriesID)
+      .then(response => {
+        results.episodes.list = response;
+        // console.log("Get EPISODES:", results.episodes.summary.airedSeasons)
+        // console.log("lenght", results.episodes.summary.airedSeasons.length)
+        let mod = 0;
+        if (results.episodes.summary.airedSeasons[0] !== "0") {
+          mod = mod + 1
+        }
+        /////////// Has issues with series that have no specials        
+        for (let i = 0; i <= results.episodes.summary.airedSeasons.length; i++) {
+          // console.log("TEST:",results.episodes.summary.airedSeasons)
+          tvdb.getSeasonPosters(seriesID, results.episodes.summary.airedSeasons[i])
+            .then(response2 => {
+              // console.log("Season Posters response:", response2)
+              // console.log(`seson ${results.episodes.summary[i]} posters:`, response)
+              results.images.seasonPosters = response2
+              if (i == results.episodes.summary.airedSeasons.length - 1) {
+                console.log("Season Posters done")
+                done++;
+              }
+              // }).catch(error => { throw (error) });
+            }).catch(error => {
+              console.log("seasonPosters:", error)
+              if (error.response.status === 404) {
+                console.log("No posters to download")
+                results.images.seasonPosters = null;
+                done++;
+                // i = results.episodes.summary.airedSeasons.length;
+              }
+            });
+        }
+      }).catch(error => { throw (error) });
   }
 
+  tvdb.getSeriesBanner(seriesID)
+    .then(response => {
+      results.images.banners = response;
+      console.log("Banners done")
+      done++;
+    }).catch(error => { throw (error) });
 
-  function TVDB_get_cast_by_id(search) {
-    fetch(`${TheTVDB_URL}/series/${search}/actors`, {
-      method: 'get',
-      headers: {
-        'Accept': TVDB_AV_HEADER,
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + TVDB_token.token,
-      },
-    })
-      .then(res => res.json())
-      .then(json => {
-        // console.log("results:", json)
-        results.cast = json.data
-        // console.log("results:", results.info)
-        saveToJSON(results)
-        createSeasonsFolders(results);
-      });
-  }
-}
+  tvdb.getSeriesImages(seriesID, 'fanart')
+    .then(response => {
+      results.images.fanart = response
+      console.log("Fanart done")
+      done++;
+    }).catch(error => { throw (error) });
+
+  tvdb.getSeriesPosters(seriesID)
+    .then(response => {
+      results.images.posters = response
+      console.log("Posters done")
+      done++;
+    }).catch(error => { throw (error) });
+
+  tvdb.getSeriesImages(seriesID, 'series')
+    .then(response => {
+      results.images.series = response
+      console.log("Series images done")
+      done++;
+    }).catch(error => { throw (error) });
+
+  tvdb.getActors(seriesID)
+    .then(response => {
+      // console.log("cast:", response)
+      results.cast = response
+      console.log("Cast done")
+      done++;
+    }).catch(error => {
+      console.log("Cast:", error)
+      if (error.response.status === 404) {
+        console.log("No posters to download")
+        results.cast = null;
+        done++;
+      }
+    });
+
+  let timesChecked = 0
+  let timeout = 60
+  let checkGoal = 8
+  let checking = setInterval(function () {
+    if (done >= checkGoal) {
+      // console.log("complete:", results);
+      seriesResults = results;
+      saveToJSON(results);
+      saveToTextFile(results);
+      createSeasonsFolders(results)
+      TVDBdownloadImages(results)
+      TVDBdownloadSeasonImages(results)
+      TVDBdownloadThumbnails(results);
+      console.log("complete")
+      clearInterval(checking);
+    } else if (timesChecked >= timeout) {
+      console.log("API timed out")
+      clearInterval(checking);
+    } else {
+      timesChecked = timesChecked + 1
+      // readline.clearLine(process.stdout, 0);  // clear current text
+      // readline.cursorTo(process.stdout, 0, 0)
+      // readline.clearScreenDown(process.stdout)
+      console.log(`${done} of ${checkGoal} Complete | Timeout in ${timeout - timesChecked}`)
+
+    }
+  }, 1000);
+};
+
+// gravity falls: 259972
+// rick and morty: 275274
+// mythbusters: 73388
+
+
+// Global information
+let filePath = '';
+let episodes = [];
+let numOfSeasons = '';
 
 let download = function (uri, filename, callback) {
   requestURL.head(uri, function (err, res, body) {
@@ -246,73 +249,151 @@ function filenameFormat(file) {
   return formatted
 }
 
-function TVDBdownloadPosters(name, seriesID, data) {
+function zero(n) {
+  return n > 9 ? "" + n : "0" + n;
+};
+
+function generateFileName(data, dataIndex) {
+  let isYear = false;
+  function seasonOrYear() {
+    if (Number(data.episodes.list[dataIndex].airedSeason) > 1000) {
+      isYear = true;
+      return data.episodes.list[dataIndex].airedSeason
+    } else {
+      isYear = false;
+      // console.log('found season special')
+      return zero(data.episodes.list[dataIndex].airedSeason)
+    }
+  }
+  let season = seasonOrYear();
+  let episodeNumber = zero(data.episodes.list[dataIndex].airedEpisodeNumber);
+  let episodeName = filenameFormat(data.episodes.list[dataIndex].episodeName);
+
+  let fileName = filenameFormat(data.info.seriesName) + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
+  // console.log("Years:", yearCount, "Seasons:", seasonCount, "Season:", episodes)
+  if (isYear = true) {
+    let position = data.episodes.summary.airedSeasons.indexOf(data.episodes.list[dataIndex].airedSeason.toString())
+    // console.log('season:', data.episodes.list[dataIndex].airedSeason, 'year pos:', position)
+    episodes[position].push(fileName);
+  } else {
+    episodes[data.episodes.list[dataIndex].airedSeason].push(fileName);
+  }
+}
+
+function TVDBdownloadImages(data) {
   // https://www.thetvdb.com/banners/posters/275274-7.jpg
-  let formattedFileName = filenameFormat(name);
-  function n(n) {
-    return n > 9 ? "" + n : "0" + n;
-  };
-  for (let i = 0; i < data.length; i++) {
-    let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
+  // https://www.thetvdb.com/banners/fanart/original/275274-9.jpg
+  // data.images.fanart[]
+  // data.images.series[] //Banners
+  let formattedFileName = filenameFormat(data.info.seriesName);
+  // download fanart
+  for (let i = 0; i < data.images.fanart.length; i++) {
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data.images.fanart[i].fileName;
     let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
     // console.log('posters ext:', fileExt)
-    let saveFileName = scanLocation + formattedFileName + '/img/' + formattedFileName + ' - poster' + n(i) + '[' + data[i].resolution + '].' + fileExt;
+    let saveFileName = filePath + 'img/' + formattedFileName + ' - fanart' + zero(i) + '[' + data.images.fanart[i].resolution + '].' + fileExt;
+    download(downloadURL, saveFileName, function () {
+    });
+  }
+
+  // download posters
+  for (let i = 0; i < data.images.posters.length; i++) {
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data.images.posters[i].fileName;
+    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+    // console.log('posters ext:', fileExt)
+    let saveFileName = filePath + 'img/' + formattedFileName + ' - poster' + zero(i) + '[' + data.images.posters[i].resolution + '].' + fileExt;
+    download(downloadURL, saveFileName, function () {
+    });
+  }
+
+  // download banners
+  for (let i = 0; i < data.images.series.length; i++) {
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data.images.series[i].fileName;
+    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+    // console.log('posters ext:', fileExt)
+    let saveFileName = filePath + 'img/' + formattedFileName + ' - banner' + zero(i) + '[' + data.images.series[i].resolution + '].' + fileExt;
     download(downloadURL, saveFileName, function () {
     });
   }
 };
 
-function TVDBdownloadFanart(name, seriesID, data) {
+function TVDBdownloadSeasonImages(data) {
   // https://www.thetvdb.com/banners/fanart/original/275274-9.jpg
-  // console.log(data);
-  let formattedFileName = filenameFormat(name);
-  function n(n) {
-    return n > 9 ? "" + n : "0" + n;
-  };
-  for (let i = 0; i < data.length; i++) {
-    let downloadURL = 'https://www.thetvdb.com/banners/' + data[i].fileName;
-    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
-    // console.log('fanart ext:', fileExt)
-    let saveFileName = scanLocation + formattedFileName + '/img/' + formattedFileName + ' - fanart' + n(i) + '[' + data[i].resolution + '].' + fileExt;
-
-    download(downloadURL, saveFileName, function () { });
+  // data.images.seasonPosters[0][]
+  if (data.images.seasonPosters != null) {
+    let seasonImages = data.images.seasonPosters;
+    let seasonInfo = data.episodes.summary.airedSeasons;
+    let formattedFileName = filenameFormat(data.info.seriesName);
+    for (let i = 0; i < seasonImages.length; i++) {
+      function seasonOrYear() {
+        if (Number(seasonImages[i].subKey) > 1000) {
+          return 'Season' + seasonImages[i].subKey
+        } else {
+          if (seasonImages[i].subKey === "0") {
+            return "Specials"
+          }
+          return 'Season' + zero(seasonImages[i].subKey)
+        }
+      }
+      let season = seasonOrYear();
+      let downloadURL = 'https://www.thetvdb.com/banners/' + seasonImages[i].fileName;
+      let resolution = seasonImages[i].resolution
+      let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+      let saveFileName = filePath + season + '/' + formattedFileName + ' - ' + season + ' - poster' + zero(i) + '[' + resolution + '].' + fileExt
+      download(downloadURL, saveFileName, function () { });
+    }
+  } else {
+    console.log("No Season Posters to Download")
   }
 };
 
 function TVDBdownloadThumbnails(data) {
   // https://www.thetvdb.com/banners/episodes/275274/4711142.jpg
-  let formattedFileName = filenameFormat(data.seriesName);
-  function n(n) {
-    return n > 9 ? "" + n : "0" + n;
-  };
-  for (let i = 0; i < data.episodes.length; i++) {
-    let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes[i].filename;
+  let formattedFileName = filenameFormat(data.info.seriesName);
+  for (let i = 0; i < data.episodes.list.length; i++) {
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data.episodes.list[i].filename;
     // console.log('Thumbnail URL:', downloadURL)
     let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
     if (fileExt != 'jpg' || fileExt != 'png') {
       fileExt = 'jpg'
     }
     // console.log('thumbnail ext:', fileExt)
-    let saveFileName = ''
-    if (data.episodes[i].airedSeason < 1) {
-      let episodeName = filenameFormat(data.episodes[i].episodeName);
-      saveFileName = scanLocation + formattedFileName + '/Specials/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
-    } else {
-      let episodeName = filenameFormat(data.episodes[i].episodeName);
-      if (data.episodes[i].airedSeason > 1000) {
-        saveFileName = scanLocation + formattedFileName + '/Season' + data.episodes[i].airedSeason + '/' + formattedFileName + ' - S' + data.episodes[i].airedSeason + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
+    let isYear = false;
+    function seasonOrYear() {
+      if (Number(data.episodes.list[i].airedSeason) > 1000) {
+        isYear = true;
+        return data.episodes.list[i].airedSeason
       } else {
-        saveFileName = scanLocation + formattedFileName + '/Season' + n(data.episodes[i].airedSeason) + '/' + formattedFileName + ' - S' + n(data.episodes[i].airedSeason) + 'E' + n(data.episodes[i].airedEpisodeNumber) + ' - ' + episodeName + '[' + data.episodes[i].thumbWidth + 'x' + data.episodes[i].thumbHeight + '].' + fileExt;
+        isYear = false;
+        // console.log('found season special')
+        return zero(data.episodes.list[i].airedSeason)
       }
     }
-    if (data.episodes[i].episodeName != null && data.episodes[i].thumbWidth != null) {
+    let season = seasonOrYear();
+    let episodeNumber = zero(data.episodes.list[i].airedEpisodeNumber);
+    let episodeName = filenameFormat(data.episodes.list[i].episodeName);
+    let imageWidth = data.episodes.list[i].thumbWidth
+    let imageHeight = data.episodes.list[i].thumbHeight
+
+    let saveFileName = ``
+    if (data.episodes.list[i].airedSeason < 1) {
+      // let episodeName = filenameFormat(data.episodes.list[i].episodeName);
+      saveFileName = filePath + 'Specials/' + formattedFileName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName + '[' + imageWidth + 'x' + imageHeight + '].' + fileExt;
+    } else {
+      // let episodeName = filenameFormat(data.episodes[i].episodeName);
+      if (isYear = true) {
+        saveFileName = filePath + 'Season' + season + '/' + formattedFileName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName + '[' + imageWidth + 'x' + imageHeight + '].' + fileExt;
+      } else {
+        saveFileName = filePath + 'Season' + season + '/' + formattedFileName + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName + '[' + imageWidth + 'x' + imageHeight + '].' + fileExt;
+      }
+    }
+    if (data.episodes.list[i].episodeName != null && imageWidth != null) {
       download(downloadURL, saveFileName, function () { });
     }
   }
 };
 
 function saveToJSON(data) {
-  // console.log("save to json:", data.info.seriesName)
   let formattedFileName = filenameFormat(data.info.seriesName);
   if (!fs.existsSync(scanLocation)) {
     fs.mkdirSync(scanLocation);
@@ -331,72 +412,31 @@ function saveToJSON(data) {
     if (err) {
       return console.log(err);
     };
-    console.log("The file was saved!");
-    saveToTextFile(`${scanLocation}${formattedFileName}/`, data);
+    console.log("JSON file saved!");
   });
-
-  // getSeriesPostersByID(data.info.seriesName, data.info.id);
-  // getSeriesFanArtByID(data.info.seriesName, data.info.id);
-
 };
+
 
 // Save Episodes to Human Readable Text File
-let filePath = '';
-let episodes = [];
-
-//How many seasons in series
-function findNumberOfSeasons(data) {
-  // console.log("find num Seasons:", data)
-  let count = 0;
-  let found = [];
-  for (let i = 0; i < data.length; i++) {
-
-    if (typeof found[data[i].airedSeason] === 'undefined') {
-      // does not exist
-      count++;
-      found.push(data[i].airedSeason);
-    } else {
-      // does exist
-    }
-  };
-  return count;
-};
-
-//Generate 3D array for seasons
-function generateArray(data) {
+function generateArray(data) {// Generate 3D array for seasons
+  numOfSeasons = data.episodes.summary.airedSeasons.length
   episodes = [];
-  for (let i = 0; i < findNumberOfSeasons(data.episodes); i++) {
+  for (let i = 0; i < numOfSeasons; i++) {
     episodes.push(new Array());
   }
+  console.log("generateArray Complete")
 };
 
-//Populates 3D array of seasons and episode names
-function generateFileNames(data) {
-  // console.log("generateFileNames:", data)
-  function n(n) {
-    return n > 9 ? "" + n : "0" + n;
+function generateFileNames(data) {// Populates 3D array of seasons and episode names
+  for (let i = 0; i < data.episodes.list.length; i++) {
+    generateFileName(data, i)
   };
-  for (let i = 0; i < data.episodes.length; i++) {
-    let season = '';
-    let episodeNumber = n(data.episodes[i].airedEpisodeNumber);
-    let episodeName = filenameFormat(data.episodes[i].episodeName);
-
-    let fileName = filenameFormat(data.info.seriesName) + ' - S' + season + 'E' + episodeNumber + ' - ' + episodeName
-
-    if (data.episodes[i].airedSeason > 1000) {
-      season = data.episodes[i].airedSeason
-      console.log("fileName:", episodes);
-    } else {
-      season = n(data.episodes[i].airedSeason);
-      episodes[data.episodes[i].airedSeason].push(fileName);
-    }
-  };
+  console.log("Generate filenames complete")
 };
 
-
-// Saves episode list to a text file
-function generateTextEpisodeList(data) {
+function generateTextEpisodeList(data) {// Saves episode list to a text file
   // Checks to see if file already exists and if it does, deltes it.
+  filePath = scanLocation + filenameFormat(data.info.seriesName) + '/'
   try {
     if (fs.existsSync(filePath + 'episode-list.txt')) {
       //file exists
@@ -410,7 +450,6 @@ function generateTextEpisodeList(data) {
   } catch (err) {
     console.error(err)
   }
-
   var text = fs.createWriteStream(filePath + 'episode-list.txt', {
     flags: 'a' // 'a' means appending (old data will be preserved)
   })
@@ -420,14 +459,11 @@ function generateTextEpisodeList(data) {
   text.write(data.info.overview + '\n') // again
   text.write('' + '\n') // Blank Space
 
-  function n(n) {
-    return n > 9 ? "" + n : "0" + n;
-  };
   for (let i = 0; i < episodes.length; i++) { // Seasons
     if (i === 0) {
       text.write('Specials' + '\n')
     } else {
-      text.write('Season ' + n(i) + '\n')
+      text.write('Season ' + zero(i) + '\n')
     }
     for (let j = 0; j < episodes[i].length; j++) { // Episodes
       text.write(episodes[i][j] + '\n')
@@ -435,43 +471,38 @@ function generateTextEpisodeList(data) {
     text.write('' + '\n') // Blank Space
   }
   text.end() // close string
+  console.log("Text file saved")
 };
 
-let saveToTextFile = function (folder, data) {
-  // console.log('Save to text file:', data)
-  filePath = folder
+let saveToTextFile = function (data) {
   generateArray(data);
   generateFileNames(data);
   generateTextEpisodeList(data);
 };
 
 function createSeasonsFolders(data) {
-  let seasons = findNumberOfSeasons(data.episodes)
-  let formattedFileName = filenameFormat(data.info.seriesName);
-
-  function n(n) {
-    return n > 9 ? "" + n : "0" + n;
+  if (!fs.existsSync(`${filePath}Specials`)) {
+    fs.mkdirSync(`${filePath}Specials`);
   };
-
-  for (let i = 0; i < seasons; i++) {
-    if (i < 1) {
-      if (!fs.existsSync(`${scanLocation}${formattedFileName}/Specials`)) {
-        fs.mkdirSync(`${scanLocation}${formattedFileName}/Specials`);
-      };
-      if (!fs.existsSync(`${scanLocation}${formattedFileName}/Extras`)) {
-        fs.mkdirSync(`${scanLocation}${formattedFileName}/Extras`);
-      };
-    } else {
-      if (data.episodes[i].airedSeason > 100) {
-        if (!fs.existsSync(`${scanLocation}${formattedFileName}/Season${data.episodes[i].airedSeason}`)) {
-          fs.mkdirSync(`${scanLocation}${formattedFileName}/Season${data.episodes[i].airedSeason}`);
+  if (!fs.existsSync(`${filePath}Extras`)) {
+    fs.mkdirSync(`${filePath}Extras`);
+  };
+  // let mod = 0;
+  // if (data.episodes.summary.airedSeasons[0] !== "0") {
+  //   mod = mod + 1
+  // }
+  for (let i = 0; i < numOfSeasons; i++) {
+    if (data.episodes.summary.airedSeasons[i] !== "0") {
+      if (data.episodes.summary.airedSeasons[i] > 1000) {
+        if (!fs.existsSync(`${filePath}Season${data.episodes.summary.airedSeasons[i]}`)) {
+          fs.mkdirSync(`${filePath}Season${data.episodes.summary.airedSeasons[i]}`);
         }
       } else {
-        if (!fs.existsSync(`${scanLocation}${formattedFileName}/Season${n(i)}`)) {
-          fs.mkdirSync(`${scanLocation}${formattedFileName}/Season${n(i)}`);
+        if (!fs.existsSync(`${filePath}Season${zero(data.episodes.summary.airedSeasons[i])}`)) {
+
+          fs.mkdirSync(`${filePath}Season${zero(data.episodes.summary.airedSeasons[i])}`);
         };
       }
     }
   }
-  TVDBdownloadThumbnails(data);
 };
