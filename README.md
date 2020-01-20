@@ -29,13 +29,13 @@ Before running the server make sure you have your API keys and run ./setup.sh fr
   - [x] Get and save all images info
   - [x] Get Cast information
   - [x] Save all data to tvbd.json file
-  - [ ] Format seasons and episodes for file nameing
-    - [ ] Take into account differences between Specials, Season#'s and Season years 
-  - [ ] Save txt file with series episodes
-  - [ ] Create series file folder structure
-  - [ ] Download and save images
-    - [ ] Poster, Fanart, Season, Series
-    - [ ] Episode Thumbnails with name formatting
+  - [x] Format seasons and episodes for file naming
+    - [x] Take into account differences between Specials, Season#'s and Season years 
+  - [x] Save txt file with series episodes
+  - [x] Create series file folder structure
+  - [x] Download and save images
+    - [x] Poster, Fanart, Season, Series
+    - [x] Episode Thumbnails with name formatting
   - [ ] Save Cast info to People database
 - [ ] detect anime and get english names from myanimelist
   - [ ] Compare search to tvdb for english/japanise title
