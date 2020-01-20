@@ -9,14 +9,39 @@ Before running the server make sure you have your API keys and run ./setup.sh fr
 - TheTVdb
 - TheMoviedb
 
-## Features
+## Features / To Do List
 - [ ] Scan files and folders
 - [ ] determine media type
 - [ ] get media information based of file names
 - [ ] pull media metata data to populate databases
-- [ ] download tv show contents from the tv database
-- [ ] download movie contents from the movie database
+- [ ] Create people database to agrigate data.
+  - [ ] Actors, Artists, Authors, Directors, Producers, etc.
+- [ ] Download movie contents from the movie database
+  - [ ] Get movie info
+  - [ ] Get cast info
+  - [ ] Save data to tmdb.json file
+  - [ ] Create Folder infrastructure
+  - [ ] Download images to img folder
+  - [ ] Save Cast info to People database
+- [ ] Download tv show contents from the tv database
+  - [x] Get Basic show info
+  - [x] Get Show Episodes
+  - [x] Get and save all images info
+  - [x] Get Cast information
+  - [x] Save all data to tvbd.json file
+  - [ ] Format seasons and episodes for file nameing
+    - [ ] Take into account differences between Specials, Season#'s and Season years 
+  - [ ] Save txt file with series episodes
+  - [ ] Create series file folder structure
+  - [ ] Download and save images
+    - [ ] Poster, Fanart, Season, Series
+    - [ ] Episode Thumbnails with name formatting
+  - [ ] Save Cast info to People database
 - [ ] detect anime and get english names from myanimelist
+  - [ ] Compare search to tvdb for english/japanise title
+  - [ ] When determined matching series Agrigate data
+  - [ ] Grab all associated seasons to single object
+  - [ ] Save data to mal.json
 - [ ] create front end to display downloaded data 
 - [ ] novel database
 - [ ] comic book database

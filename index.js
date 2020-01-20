@@ -22,8 +22,8 @@ const readline = require('readline');
 const cmd = require('node-cmd');
 
 const webAPI = require('./modules/webAPI.js');
-const TVDBapi = require('./modules/thetvdb.js');
-// const TVDBapi = require('./modules/thetvdb_v2.js');
+const TVDBapi = require('./modules/thetvdb_v2.js');
+// const TVDBapi = require('./modules/thetvdb_v3.js');
 const TMDBapi = require('./modules/theMoviedb.js');
 const myAL = require('./modules/myanimelist.js');
 const scan = require('./modules/media-scanner.js');
