@@ -131,7 +131,7 @@ exports.getSeriesAllByID = function (seriesID) {
             });
         }
       }).catch(error => { throw (error) });
-    }
+  }
 
   tvdb.getSeriesBanner(seriesID)
     .then(response => {
@@ -384,31 +384,38 @@ function TVDBdownloadCast(data) {
   let castFolder = `${filePath}Cast`;
 
   let i = 0;
-  let goal = data.cast.length;
-  let checking = setInterval(function () {
-    let name = data.cast[i].name.trim();
-    if (!fs.existsSync(`${castFolder}/${name}`)) {
-      fs.mkdirSync(`${castFolder}/${name}`);
-    };
-    let downloadURL = 'https://www.thetvdb.com/banners/' + data.cast[i].image;
-    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
-    if (fileExt != 'jpg' || fileExt != 'png') {
-      fileExt = 'jpg'
-    }
-    let saveFileName = `${castFolder}/${name}/${name} - as - ${data.cast[i].role.trim()}${zero(i)}.${fileExt}`;
-    download(downloadURL, saveFileName, function () {
-      if (i < goal - 1) {
-        i++
-        console.log(`${i} of ${goal} complete.`);
-      } else {
-        console.log('Cast download complete');
-        clearInterval(checking);
-        
+  let goal = 0;
+  if (data.cast === null) {
+    goal = 0
+  } else {
+    goal = data.cast.length
+    let checking = setInterval(function () {
+      let name = data.cast[i].name.trim();
+      if (!fs.existsSync(`${castFolder}/${name}`)) {
+        fs.mkdirSync(`${castFolder}/${name}`);
+      };
+      let downloadURL = 'https://www.thetvdb.com/banners/' + data.cast[i].image;
+      let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+      if (fileExt != 'jpg' || fileExt != 'png') {
+        fileExt = 'jpg'
       }
-     });
-  }, 200);
+      let saveFileName = `${castFolder}/${name}/${name} - as - ${data.cast[i].role.trim()}${zero(i)}.${fileExt}`;
+      download(downloadURL, saveFileName, function () {
+        if (i < goal - 1) {
+          i++
+          // console.log(`${i} of ${goal} complete.`);
+        } else {
+          console.log('Cast download complete');
+          clearInterval(checking);
+        }
+      });
+    }, 200);
+  }
+
+
+
   // for (let i = 0; i < data.cast.length; i++){
-    
+
   // }
 }
 
