@@ -9,8 +9,10 @@ const readline = require('readline');
 const bodyParser = require('body-parser');
 
 let scanLocation = 'downloads/'
-let ended = process.env.ENDED
-let continuing = process.env.CONTINUING
+// let ended = process.env.ENDED || scanLocation
+let ended = scanLocation
+// let continuing = process.env.CONTINUING || scanLocations
+let continuing = scanLocation
 
 // const rl = readline.createInterface({
 //   input: process.stdin,
@@ -47,24 +49,6 @@ exports.getSeries = function (seriesName) {
         console.log('Name:', response[i].seriesName, '| Released:', year, "| Status:", response[i].status, '| ID:', response[i].id);
       };
       return results;
-    })
-    .catch(error => { throw (error) });
-};
-
-exports.getSeriesNameAPI = function (seriesName) {
-  let results = [];
-  tvdb.getSeriesByName(seriesName)
-    .then(response => {
-      for (let i = 0; i < response.length; i++) {
-        let series = {
-          name: response[i].seriesName,
-          id: response[i].id
-        }
-        results.push(series);
-        // console.log('name:', response[i].seriesName, 'ID:', response[i].id);
-      };
-      // console.log('TVDB Raw:', JSON.stringify(results));
-      return JSON.stringify(results);
     })
     .catch(error => { throw (error) });
 };
@@ -147,7 +131,7 @@ exports.getSeriesAllByID = function (seriesID) {
             });
         }
       }).catch(error => { throw (error) });
-  }
+    }
 
   tvdb.getSeriesBanner(seriesID)
     .then(response => {
@@ -205,6 +189,7 @@ exports.getSeriesAllByID = function (seriesID) {
       TVDBdownloadImages(results)
       TVDBdownloadSeasonImages(results)
       TVDBdownloadThumbnails(results);
+      TVDBdownloadCast(results);
       console.log("complete")
       clearInterval(checking);
     } else if (timesChecked >= timeout) {
@@ -393,6 +378,40 @@ function TVDBdownloadThumbnails(data) {
   }
 };
 
+function TVDBdownloadCast(data) {
+  // https://www.thetvdb.com/banners/episodes/275274/4711142.jpg
+  // let formattedFileName = filenameFormat(data.info.seriesName);
+  let castFolder = `${filePath}Cast`;
+
+  let i = 0;
+  let goal = data.cast.length;
+  let checking = setInterval(function () {
+    let name = data.cast[i].name.trim();
+    if (!fs.existsSync(`${castFolder}/${name}`)) {
+      fs.mkdirSync(`${castFolder}/${name}`);
+    };
+    let downloadURL = 'https://www.thetvdb.com/banners/' + data.cast[i].image;
+    let fileExt = downloadURL.substr(downloadURL.lastIndexOf('.') + 1);
+    if (fileExt != 'jpg' || fileExt != 'png') {
+      fileExt = 'jpg'
+    }
+    let saveFileName = `${castFolder}/${name}/${name} - as - ${data.cast[i].role.trim()}${zero(i)}.${fileExt}`;
+    download(downloadURL, saveFileName, function () {
+      if (i < goal - 1) {
+        i++
+        console.log(`${i} of ${goal} complete.`);
+      } else {
+        console.log('Cast download complete');
+        clearInterval(checking);
+        
+      }
+     });
+  }, 200);
+  // for (let i = 0; i < data.cast.length; i++){
+    
+  // }
+}
+
 function saveToJSON(data) {
   let formattedFileName = filenameFormat(data.info.seriesName);
   if (!fs.existsSync(scanLocation)) {
@@ -487,10 +506,9 @@ function createSeasonsFolders(data) {
   if (!fs.existsSync(`${filePath}Extras`)) {
     fs.mkdirSync(`${filePath}Extras`);
   };
-  // let mod = 0;
-  // if (data.episodes.summary.airedSeasons[0] !== "0") {
-  //   mod = mod + 1
-  // }
+  if (!fs.existsSync(`${filePath}Cast`)) {
+    fs.mkdirSync(`${filePath}Cast`);
+  };
   for (let i = 0; i < numOfSeasons; i++) {
     if (data.episodes.summary.airedSeasons[i] !== "0") {
       if (data.episodes.summary.airedSeasons[i] > 1000) {

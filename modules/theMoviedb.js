@@ -25,7 +25,8 @@ exports.searchMovie = function (movieName) {
           let movieTitle = data.body.results[i].title;
           let movieID = data.body.results[i].id;
           let release = data.body.results[i].release_date.split('-');
-          console.log('Title:', movieTitle, 'Release:', release[0], 'ID:', movieID);
+          // console.log('Title:', movieTitle, 'Release:', release[0], 'ID:', movieID);
+          console.log(`Title: ${movieTitle} | Release: ${release[0]} | ID: ${movieID}`);
         }
         // res.send(data.body.results);
       })
@@ -72,6 +73,30 @@ function saveToJSON(data) {
 
   if (!fs.existsSync(`${scanLocation}${formattedFileName}/img`)) {
     fs.mkdirSync(`${scanLocation}${formattedFileName}/img`);
+  };
+
+  if (!fs.existsSync(`${scanLocation}${formattedFileName}/Extras`)) {
+    fs.mkdirSync(`${scanLocation}${formattedFileName}/Extras`);
+  };
+
+  if (!fs.existsSync(`${scanLocation}${formattedFileName}/Behind\ The\ Scenes`)) {
+    fs.mkdirSync(`${scanLocation}${formattedFileName}/Behind\ The\ Scenes`);
+  };
+
+  if (!fs.existsSync(`${scanLocation}${formattedFileName}/Deleted\ Scenes`)) {
+    fs.mkdirSync(`${scanLocation}${formattedFileName}/Deleted\ Scenes`);
+  };
+
+  if (!fs.existsSync(`${scanLocation}${formattedFileName}/Interviews`)) {
+    fs.mkdirSync(`${scanLocation}${formattedFileName}/Interviews`);
+  };
+
+  if (!fs.existsSync(`${scanLocation}${formattedFileName}/Scenes`)) {
+    fs.mkdirSync(`${scanLocation}${formattedFileName}/Scenes`);
+  };
+
+  if (!fs.existsSync(`${scanLocation}${formattedFileName}/Trailers`)) {
+    fs.mkdirSync(`${scanLocation}${formattedFileName}/Trailers`);
   };
 
   fs.writeFile(`${scanLocation}${formattedFileName}/tmdb.json`, JSON.stringify(data), 'utf8', function (err) {
