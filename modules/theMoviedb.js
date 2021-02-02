@@ -99,6 +99,10 @@ function saveToJSON(data) {
     fs.mkdirSync(`${scanLocation}${formattedFileName}/Trailers`);
   };
 
+  if (!fs.existsSync(`${scanLocation}${formattedFileName}/.raw`)) {
+    fs.mkdirSync(`${scanLocation}${formattedFileName}/.raw`);
+  };
+
   fs.writeFile(`${scanLocation}${formattedFileName}/tmdb.json`, JSON.stringify(data), 'utf8', function (err) {
     if (err) {
       return console.log(err);

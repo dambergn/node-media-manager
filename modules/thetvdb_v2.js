@@ -178,16 +178,16 @@ exports.getSeriesAllByID = function (seriesID) {
 
   let timesChecked = 0
   let timeout = 60
-  let checkGoal = 8
+  let checkGoal = 7
   let checking = setInterval(function () {
     if (done >= checkGoal) {
       // console.log("complete:", results);
       seriesResults = results;
       saveToJSON(results);
       saveToTextFile(results);
-      createSeasonsFolders(results)
-      TVDBdownloadImages(results)
-      TVDBdownloadSeasonImages(results)
+      createSeasonsFolders(results);
+      TVDBdownloadImages(results);
+      TVDBdownloadSeasonImages(results);
       TVDBdownloadThumbnails(results);
       TVDBdownloadCast(results);
       console.log("complete")

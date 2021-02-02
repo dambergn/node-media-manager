@@ -70,3 +70,13 @@ BMP, JPEG
 - 328p
 - 240p
 - 160p
+
+### Checking
+1. Banners
+2. Episode Summary
+3. Posters
+4. Info
+5. Fanart
+6. Cast
+7.
+8.
