@@ -46,9 +46,10 @@ exports.getSeries = function (seriesName) {
           response[i].firstAired.split('-')[0]
         }
         results.push(series);
-        console.log('Name:', response[i].seriesName, '| Released:', year, "| Status:", response[i].status, '| ID:', response[i].id);
+        // console.log('Name:', response[i].seriesName, '| Released:', year, "| Status:", response[i].status, '| ID:', response[i].id);
       };
       return results;
+      // console.log(results)
     })
     .catch(error => { throw (error) });
 };
