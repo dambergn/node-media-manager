@@ -35,10 +35,6 @@ let auth = JSON.stringify({
   "apikey": `${API_KEY}`,
   "pin": `${API_PIN}`
 })
-// let auth = JSON.stringify({
-//   "apikey": "cc086579-9744-4b42-ae41-c3e90dc5f919",
-//   "pin": "4ZPQB7CC"
-// })
 
 let thetvdb_token = ""
 
